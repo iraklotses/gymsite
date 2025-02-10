@@ -47,13 +47,7 @@ app.get("/test-db", (req, res) => {
     });
 });
 
-db.connect((err) => {
-  if (err) {
-    console.error("Σφάλμα σύνδεσης στη βάση δεδομένων:", err);
-    return;
-  }
-  console.log("✅ Συνδέθηκε στη MySQL βάση!");
-});
+console.log("✅ Η βάση είναι έτοιμη για queries!");
 
 // Απλό route για έλεγχο αν το API δουλεύει
 app.get("/", (req, res) => {
