@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(cors());
 
 // Σύνδεση με τη MySQL βάση δεδομένων στο InfinityFree
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: "sql303.infinityfree.com", // Πάρε το από το .env
   user: "if0_38279736", // Πάρε το από το .env
   password: "PztyxEDT1hk", // Πάρε το από το .env
