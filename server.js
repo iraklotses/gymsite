@@ -12,10 +12,10 @@ app.use(cors());
 
 // Σύνδεση με τη MySQL βάση δεδομένων στο InfinityFree
 const db = mysql.createPool({
-  host: "sql303.infinityfree.com", // Πάρε το από το .env
-  user: "if0_38279736", // Πάρε το από το .env
-  password: "PztyxEDT1hk", // Πάρε το από το .env
-  database: "if0_38279736_gym_booking" // Πάρε το από το .env
+  host: "sql.freedb.tech", // Πάρε το από το .env
+  user: "freedb_Iraklotses", // Πάρε το από το .env
+  password: "@t92BcDp7GQ$T6F", // Πάρε το από το .env
+  database: "freedb_gym_database" // Πάρε το από το .env
 });
 
 // 🔥 LOGIN ROUTE
