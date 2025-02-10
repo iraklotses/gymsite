@@ -12,10 +12,30 @@ app.use(cors());
 
 // Σύνδεση με τη MySQL βάση δεδομένων στο InfinityFree
 const db = mysql.createConnection({
-  host: process.env.DB_HOST, // Πάρε το από το .env
-  user: process.env.DB_USER, // Πάρε το από το .env
-  password: process.env.DB_PASS, // Πάρε το από το .env
-  database: process.env.DB_NAME, // Πάρε το από το .env
+  host: "sql303.infinityfree.com", // Πάρε το από το .env
+  user: "if0_38279736", // Πάρε το από το .env
+  password: "PztyxEDT1hk", // Πάρε το από το .env
+  database: "if0_38279736_gym_booking" // Πάρε το από το .env
+});
+
+// 🔥 LOGIN ROUTE
+app.post("/login", (req, res) => {
+    const { email, password } = req.body;
+
+    db.query(
+        "SELECT * FROM users WHERE email = ? AND password = ?",
+        [email, password],
+        (err, results) => {
+            if (err) {
+                return res.status(500).json({ error: "Σφάλμα στον server!" });
+            }
+            if (results.length > 0) {
+                res.json({ success: true, message: "Επιτυχής σύνδεση!", token: "dummyToken123" });
+            } else {
+                res.status(401).json({ success: false, message: "Λάθος email ή password!" });
+            }
+        }
+    );
 });
 
 db.connect((err) => {
