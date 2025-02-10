@@ -38,6 +38,15 @@ app.post("/login", (req, res) => {
     );
 });
 
+app.get("/test-db", (req, res) => {
+    db.query("SELECT 1", (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: "Σφάλμα σύνδεσης στη βάση!", details: err });
+        }
+        res.json({ success: true, message: "Η βάση δεδομένων λειτουργεί!" });
+    });
+});
+
 db.connect((err) => {
   if (err) {
     console.error("Σφάλμα σύνδεσης στη βάση δεδομένων:", err);
