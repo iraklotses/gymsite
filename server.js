@@ -43,24 +43,20 @@ app.post("/login", (req, res) => {
 });
 
 app.get("/profile", (req, res) => {
-    const token = req.headers.authorization; // Παίρνουμε το token από τον client
+    const token = req.headers.authorization; // Παίρνουμε το token από το request
 
     if (!token) {
-        return res.status(401).json({ error: "Δεν υπάρχει token!" });
+        return res.status(401).json({ error: "Δεν έχετε εξουσιοδότηση!" });
     }
 
-    // Εδώ το token είναι απλά ένα placeholder. Δεν κάνουμε πραγματικό JWT decode.
+    // Για τώρα, χρησιμοποιούμε το dummy token για να επιστρέφουμε έναν χρήστη
     if (token === "dummyToken123") {
-        db.query("SELECT full_name, email FROM users LIMIT 1", (err, result) => {
-            if (err) return res.status(500).json({ error: "Σφάλμα στη βάση!" });
-            if (result.length === 0) return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε!" });
-
-            res.json(result[0]); // Επιστρέφουμε το full_name & email του χρήστη
-        });
-    } else {
-        return res.status(403).json({ error: "Μη έγκυρο token!" });
+        return res.json({ full_name: "Test User", email: "testuser@example.com" });
     }
+
+    res.status(403).json({ error: "Μη έγκυρο token!" });
 });
+
 
 
 
