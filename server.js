@@ -6,27 +6,18 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ CORS Middleware (Επιτρέπει το frontend)
+// ✅ CORS Middleware
 app.use(cors({
     origin: "https://gymsite-frontend.vercel.app", // Επιτρέπει το frontend URL
-    methods: "GET,POST",
-    allowedHeaders: "Content-Type,Authorization"
+    methods: "GET, POST",
+    allowedHeaders: "Content-Type, Authorization"
 }));
 
-// ✅ Επιπλέον CORS (για ασφάλεια και debugging)
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    next();
-});
-
-// ✅ Middleware για JSON δεδομένα
 app.use(express.json());
 
 // 🔗 Σύνδεση με τη MySQL βάση δεδομένων
 const db = mysql.createPool({
-    host: "sql.freedb.tech", 
+    host: "sql.freedb.tech",
     user: "freedb_Iraklotses",
     password: "@t92BcDp7GQ$T6F",
     database: "freedb_gym_database"
@@ -58,8 +49,10 @@ app.post("/login", (req, res) => {
                     success: true,
                     message: "Επιτυχής σύνδεση!",
                     user: {
-                        id: user.id, // ✅ Επιστρέφουμε το user_id
+                        id: user.id, // ✅ Στέλνουμε και το user_id
                         email: user.email
+                    }
+                });
             } else {
                 res.status(401).json({ success: false, message: "Λάθος email ή password!" });
             }
@@ -69,15 +62,15 @@ app.post("/login", (req, res) => {
 
 // 🔥 PROFILE ROUTE
 app.get("/profile", (req, res) => {
-    const { email } = req.query;
+    const { id } = req.query;
 
-    if (!email) {
-        return res.status(400).json({ error: "Το email είναι υποχρεωτικό!" });
+    if (!id) {
+        return res.status(400).json({ error: "Το user_id είναι υποχρεωτικό!" });
     }
 
     db.query(
-        "SELECT full_name, email FROM users WHERE email = ?",
-        [email],
+        "SELECT full_name, email FROM users WHERE id = ?",
+        [id],
         (err, result) => {
             if (err) return res.status(500).json({ error: "Σφάλμα στη βάση!" });
             if (result.length === 0) return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε!" });
@@ -85,16 +78,6 @@ app.get("/profile", (req, res) => {
             res.json(result[0]);
         }
     );
-});
-
-// 🔥 TEST DATABASE ROUTE
-app.get("/test-db", (req, res) => {
-    db.query("SELECT 1", (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: "Σφάλμα σύνδεσης στη βάση!", details: err });
-        }
-        res.json({ success: true, message: "Η βάση δεδομένων λειτουργεί!" });
-    });
 });
 
 // ✅ Εκκίνηση Server
