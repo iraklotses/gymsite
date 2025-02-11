@@ -43,15 +43,25 @@ app.post("/login", (req, res) => {
 });
 
 app.get("/profile", (req, res) => {
-    const userId = req.query.id; // (ή από JWT αν έχεις authentication)
-    
-    db.query("SELECT full_name, email FROM users WHERE id = ?", [userId], (err, result) => {
-        if (err) return res.status(500).json({ error: "Σφάλμα στη βάση!" });
-        if (result.length === 0) return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε!" });
+    const token = req.headers.authorization; // Παίρνουμε το token από τον client
 
-        res.json(result[0]); // Επιστρέφει το full_name & email του χρήστη
-    });
+    if (!token) {
+        return res.status(401).json({ error: "Δεν υπάρχει token!" });
+    }
+
+    // Εδώ το token είναι απλά ένα placeholder. Δεν κάνουμε πραγματικό JWT decode.
+    if (token === "dummyToken123") {
+        db.query("SELECT full_name, email FROM users LIMIT 1", (err, result) => {
+            if (err) return res.status(500).json({ error: "Σφάλμα στη βάση!" });
+            if (result.length === 0) return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε!" });
+
+            res.json(result[0]); // Επιστρέφουμε το full_name & email του χρήστη
+        });
+    } else {
+        return res.status(403).json({ error: "Μη έγκυρο token!" });
+    }
 });
+
 
 
 app.get("/test-db", (req, res) => {
