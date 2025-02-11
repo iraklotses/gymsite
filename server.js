@@ -82,13 +82,14 @@ app.get("/profile", (req, res) => {
 
 // 🔥 ΥΠΗΡΕΣΙΕΣ (Services)
 app.get("/services", (req, res) => {
-    db.query("SELECT name FROM services", (err, results) => {
+    db.query("SELECT id, name, description, price FROM services", (err, results) => {
         if (err) {
             return res.status(500).json({ error: "Σφάλμα στη βάση!", details: err });
         }
         res.json(results);
     });
 });
+
 
 // 🔥 ΑΝΑΚΟΙΝΩΣΕΙΣ (Announcements)
 app.get("/announcements", (req, res) => {
