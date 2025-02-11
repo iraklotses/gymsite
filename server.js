@@ -3,6 +3,9 @@ const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
 
+const jwt = require("jsonwebtoken");
+const SECRET_KEY = "mysecret"; // Βάλε κάτι πιο ασφαλές στο .env σου
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -22,7 +25,7 @@ const db = mysql.createPool({
   database: "freedb_gym_database" // Πάρε το από το .env
 });
 
-// 🔥 LOGIN ROUTE
+// 🔥 LOGIN ROUTE (Βελτιωμένο με JWT)
 app.post("/login", (req, res) => {
     const { email, password } = req.body;
 
@@ -34,7 +37,10 @@ app.post("/login", (req, res) => {
                 return res.status(500).json({ error: "Σφάλμα στον server!" });
             }
             if (results.length > 0) {
-                res.json({ success: true, message: "Επιτυχής σύνδεση!", token: "dummyToken123" });
+                const user = results[0];
+                const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: "1h" });
+
+                res.json({ success: true, message: "Επιτυχής σύνδεση!", token });
             } else {
                 res.status(401).json({ success: false, message: "Λάθος email ή password!" });
             }
@@ -42,19 +48,23 @@ app.post("/login", (req, res) => {
     );
 });
 
+// 🔥 PROTECTED PROFILE ROUTE (Ελέγχει το token)
 app.get("/profile", (req, res) => {
-    const token = req.headers.authorization; // Παίρνουμε το token από το request
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
 
-    if (!token) {
-        return res.status(401).json({ error: "Δεν έχετε εξουσιοδότηση!" });
-    }
+    if (!token) return res.status(403).json({ error: "Μη έγκυρο token!" });
 
-    // Για τώρα, χρησιμοποιούμε το dummy token για να επιστρέφουμε έναν χρήστη
-    if (token === "dummyToken123") {
-        return res.json({ full_name: "Test User", email: "testuser@example.com" });
-    }
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) return res.status(403).json({ error: "Μη έγκυρο token!" });
 
-    res.status(403).json({ error: "Μη έγκυρο token!" });
+        db.query("SELECT full_name, email FROM users WHERE id = ?", [user.id], (err, result) => {
+            if (err) return res.status(500).json({ error: "Σφάλμα στη βάση!" });
+            if (result.length === 0) return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε!" });
+
+            res.json(result[0]);
+        });
+    });
 });
 
 
