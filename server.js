@@ -54,7 +54,12 @@ app.post("/login", (req, res) => {
             }
             if (results.length > 0) {
                 const user = results[0];
-                res.json({ success: true, message: "Επιτυχής σύνδεση!", user });
+                res.json({
+                    success: true,
+                    message: "Επιτυχής σύνδεση!",
+                    user: {
+                        id: user.id, // ✅ Επιστρέφουμε το user_id
+                        email: user.email
             } else {
                 res.status(401).json({ success: false, message: "Λάθος email ή password!" });
             }
