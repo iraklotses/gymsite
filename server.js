@@ -92,21 +92,17 @@ app.get("/services", (req, res) => {
 
 // 🔥 ΑΝΑΚΟΙΝΩΣΕΙΣ (Announcements)
 app.get("/announcements", (req, res) => {
-    db.query("SELECT title, DATE_FORMAT(date, '%d/%m/%Y') AS date FROM announcements ORDER BY date DESC", (err, results) => {
+    db.query("SELECT title, content, DATE_FORMAT(created_at, '%d/%m/%Y') AS date FROM announcements ORDER BY created_at DESC", (err, results) => {
         if (err) {
             console.error("❌ Σφάλμα στη βάση ανακοινώσεων:", err);
             return res.status(500).json({ error: "Σφάλμα στη βάση!", details: err });
         }
-        
-        console.log("📢 Ανακοινώσεις που επιστράφηκαν:", results);
-        
-        if (!Array.isArray(results)) {
-            return res.status(500).json({ error: "Η απάντηση δεν είναι array!", data: results });
-        }
 
+        console.log("📢 Ανακοινώσεις που επιστράφηκαν:", results);
         res.json(results);
     });
 });
+
 
 
 // ✅ Εκκίνηση Server
