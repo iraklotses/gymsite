@@ -25,12 +25,11 @@ const db = mysql.createPool({
   database: "freedb_gym_database" // Πάρε το από το .env
 });
 
-// 🔥 LOGIN ROUTE (Βελτιωμένο με JWT)
 app.post("/login", (req, res) => {
     const { email, password } = req.body;
 
     db.query(
-        "SELECT * FROM users WHERE email = ? AND password = ?",
+        "SELECT id, email FROM users WHERE email = ? AND password = ?",
         [email, password],
         (err, results) => {
             if (err) {
@@ -38,9 +37,9 @@ app.post("/login", (req, res) => {
             }
             if (results.length > 0) {
                 const user = results[0];
-                const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: "1h" });
 
-                res.json({ success: true, message: "Επιτυχής σύνδεση!", token });
+                // 🔹 Επιστρέφουμε το user_id αντί για token
+                res.json({ success: true, message: "Επιτυχής σύνδεση!", user_id: user.id });
             } else {
                 res.status(401).json({ success: false, message: "Λάθος email ή password!" });
             }
@@ -48,24 +47,20 @@ app.post("/login", (req, res) => {
     );
 });
 
-// 🔥 PROTECTED PROFILE ROUTE (Ελέγχει το token)
+// 🔥 Profile Route - Επιστρέφει στοιχεία του χρήστη με βάση το ID
 app.get("/profile", (req, res) => {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
+    const userId = req.query.id; // Παίρνει το ID από το query string
 
-    if (!token) return res.status(403).json({ error: "Μη έγκυρο token!" });
+    if (!userId) return res.status(403).json({ error: "Μη έγκυρο ID!" });
 
-    jwt.verify(token, SECRET_KEY, (err, user) => {
-        if (err) return res.status(403).json({ error: "Μη έγκυρο token!" });
+    db.query("SELECT full_name, email FROM users WHERE id = ?", [userId], (err, result) => {
+        if (err) return res.status(500).json({ error: "Σφάλμα στη βάση!" });
+        if (result.length === 0) return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε!" });
 
-        db.query("SELECT full_name, email FROM users WHERE id = ?", [user.id], (err, result) => {
-            if (err) return res.status(500).json({ error: "Σφάλμα στη βάση!" });
-            if (result.length === 0) return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε!" });
-
-            res.json(result[0]);
-        });
+        res.json(result[0]); // Επιστρέφει τα δεδομένα του χρήστη
     });
 });
+
 
 
 
