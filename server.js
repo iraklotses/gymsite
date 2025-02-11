@@ -38,6 +38,18 @@ app.post("/login", (req, res) => {
     );
 });
 
+app.get("/profile", (req, res) => {
+    const userId = req.query.id; // (ή από JWT αν έχεις authentication)
+    
+    db.query("SELECT full_name, email FROM users WHERE id = ?", [userId], (err, result) => {
+        if (err) return res.status(500).json({ error: "Σφάλμα στη βάση!" });
+        if (result.length === 0) return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε!" });
+
+        res.json(result[0]); // Επιστρέφει το full_name & email του χρήστη
+    });
+});
+
+
 app.get("/test-db", (req, res) => {
     db.query("SELECT 1", (err, result) => {
         if (err) {
