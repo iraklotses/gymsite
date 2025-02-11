@@ -49,7 +49,7 @@ app.post("/login", (req, res) => {
                     success: true,
                     message: "Επιτυχής σύνδεση!",
                     user: {
-                        id: user.id, // ✅ Στέλνουμε και το user_id
+                        id: user.id,
                         email: user.email
                     }
                 });
@@ -78,6 +78,26 @@ app.get("/profile", (req, res) => {
             res.json(result[0]);
         }
     );
+});
+
+// 🔥 ΥΠΗΡΕΣΙΕΣ (Services)
+app.get("/services", (req, res) => {
+    db.query("SELECT name FROM services", (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: "Σφάλμα στη βάση!", details: err });
+        }
+        res.json(results);
+    });
+});
+
+// 🔥 ΑΝΑΚΟΙΝΩΣΕΙΣ (Announcements)
+app.get("/announcements", (req, res) => {
+    db.query("SELECT title, DATE_FORMAT(date, '%d/%m/%Y') AS date FROM announcements ORDER BY date DESC", (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: "Σφάλμα στη βάση!", details: err });
+        }
+        res.json(results);
+    });
 });
 
 // ✅ Εκκίνηση Server
