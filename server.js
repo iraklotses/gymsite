@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(cors({
     origin: "https://gymsite-frontend.vercel.app", // ✅ Επιτρέπει το frontend URL
     methods: "GET,POST",
-    allowedHeaders: "Content-Type,Authorization"
+    allowedHeaders: "Content-Type","Authorization"
 }));
 
 // Σύνδεση με τη MySQL βάση δεδομένων στο InfinityFree
