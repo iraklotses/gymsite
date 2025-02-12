@@ -157,6 +157,25 @@ app.post("/programs", (req, res) => {
     });
 });
 
+app.delete("/programs/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log(`🗑️ Διαγραφή προγράμματος με ID: ${id}`);
+
+        const result = await db.query("DELETE FROM programs WHERE id = ?", [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Το πρόγραμμα δεν βρέθηκε" });
+        }
+
+        res.json({ success: true, message: "Το πρόγραμμα διαγράφηκε επιτυχώς!" });
+    } catch (err) {
+        console.error("❌ Σφάλμα στη διαγραφή προγράμματος:", err);
+        res.status(500).json({ error: "Σφάλμα στη βάση δεδομένων" });
+    }
+});
+
+
 
 
 // ✅ Εκκίνηση Server
