@@ -176,6 +176,39 @@ app.delete("/programs/:id", async (req, res) => {
     }
 });
 
+app.delete("/users/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        await db.query("DELETE FROM users WHERE id = ?", [id]);
+        res.json({ message: "Ο χρήστης διαγράφηκε επιτυχώς" });
+    } catch (err) {
+        console.error("❌ Σφάλμα στη διαγραφή χρήστη:", err);
+        res.status(500).json({ error: "Σφάλμα στη βάση" });
+    }
+});
+
+app.delete("/trainers/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        await db.query("DELETE FROM trainers WHERE id = ?", [id]);
+        res.json({ message: "Ο γυμναστής διαγράφηκε επιτυχώς" });
+    } catch (err) {
+        console.error("❌ Σφάλμα στη διαγραφή γυμναστή:", err);
+        res.status(500).json({ error: "Σφάλμα στη βάση" });
+    }
+});
+
+app.delete("/announcements/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        await db.query("DELETE FROM announcements WHERE id = ?", [id]);
+        res.json({ message: "Η ανακοίνωση διαγράφηκε επιτυχώς" });
+    } catch (err) {
+        console.error("❌ Σφάλμα στη διαγραφή ανακοίνωσης:", err);
+        res.status(500).json({ error: "Σφάλμα στη βάση" });
+    }
+});
+
 
 // ✅ Εκκίνηση Server
 app.listen(PORT, () => {
