@@ -139,7 +139,7 @@ app.get("/trainers", (req, res) => {
 });
 
 app.get("/programs", (req, res) => {
-    db.query("SELECT id, name, max_capacity FROM programs", (err, results) => {
+    db.query("SELECT id, name, trainer_id, day_of_week, time, max_capacity FROM programs", (err, results) => {
         if (err) {
             console.error("❌ Σφάλμα στη βάση:", err);
             return res.status(500).json({ error: "Σφάλμα στη βάση" });
@@ -147,6 +147,7 @@ app.get("/programs", (req, res) => {
         res.json(results);
     });
 });
+
 
 app.post("/programs", (req, res) => {
     const { name, capacity } = req.body;
