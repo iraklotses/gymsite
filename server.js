@@ -106,6 +106,45 @@ app.get("/announcements", (req, res) => {
     });
 });
 
+//ΔΙΑΧΕΙΡΙΣΗ
+
+app.post("/announcements", (req, res) => {
+    const { title, content } = req.body;
+    db.query("INSERT INTO announcements (title, content) VALUES (?, ?)", [title, content], (err) => {
+        if (err) return res.status(500).json({ error: "Σφάλμα κατά την εισαγωγή!" });
+        res.json({ success: true, message: "Η ανακοίνωση προστέθηκε!" });
+    });
+});
+
+app.get("/users", (req, res) => {
+    db.query("SELECT id, full_name, email, role FROM users", (err, results) => {
+        if (err) return res.status(500).json({ error: "Σφάλμα στη βάση" });
+        res.json(results);
+    });
+});
+
+app.get("/trainers", (req, res) => {
+    db.query("SELECT id, name, specialty FROM trainers", (err, results) => {
+        if (err) return res.status(500).json({ error: "Σφάλμα στη βάση" });
+        res.json(results);
+    });
+});
+
+app.get("/programs", (req, res) => {
+    db.query("SELECT id, name, capacity FROM programs", (err, results) => {
+        if (err) return res.status(500).json({ error: "Σφάλμα στη βάση" });
+        res.json(results);
+    });
+});
+
+app.post("/programs", (req, res) => {
+    const { name, capacity } = req.body;
+    db.query("INSERT INTO programs (name, capacity) VALUES (?, ?)", [name, capacity], (err) => {
+        if (err) return res.status(500).json({ error: "Σφάλμα κατά την εισαγωγή!" });
+        res.json({ success: true, message: "Το πρόγραμμα προστέθηκε!" });
+    });
+});
+
 
 
 // ✅ Εκκίνηση Server
