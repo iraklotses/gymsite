@@ -160,7 +160,7 @@ app.post("/programs", (req, res) => {
 app.delete("/programs/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        console.log(`🗑️ Διαγραφή προγράμματος με ID: ${id}`);
+        console.log(`🗑️ Λήψη DELETE request για πρόγραμμα με ID: ${id}`);
 
         const result = await db.query("DELETE FROM programs WHERE id = ?", [id]);
 
@@ -168,14 +168,13 @@ app.delete("/programs/:id", async (req, res) => {
             return res.status(404).json({ error: "Το πρόγραμμα δεν βρέθηκε" });
         }
 
-        res.json({ success: true, message: "Το πρόγραμμα διαγράφηκε επιτυχώς!" });
+        console.log("✅ Επιτυχής διαγραφή");
+        res.json({ success: true, message: "Το πρόγραμμα διαγράφηκε!" });
     } catch (err) {
-        console.error("❌ Σφάλμα στη διαγραφή προγράμματος:", err);
-        res.status(500).json({ error: "Σφάλμα στη βάση δεδομένων" });
+        console.error("❌ Σφάλμα στη διαγραφή:", err);
+        res.status(500).json({ error: "Σφάλμα στη βάση" });
     }
 });
-
-
 
 
 // ✅ Εκκίνηση Server
