@@ -201,14 +201,21 @@ app.delete("/trainers/:id", async (req, res) => {
 app.delete("/announcements/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        console.log(`🗑 Διαγραφή ανακοίνωσης με ID: ${id}`); // Debugging log
-        await db.query("DELETE FROM announcements WHERE id = ?", [id]);
-        res.json({ message: "Η ανακοίνωση διαγράφηκε επιτυχώς" });
+        console.log(`🗑 Διαγραφή ανακοίνωσης με ID: ${id}`);
+
+        const result = await db.query("DELETE FROM announcements WHERE id = ?", [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Η ανακοίνωση δεν βρέθηκε" });
+        }
+
+        res.json({ message: "✅ Η ανακοίνωση διαγράφηκε!" });
     } catch (err) {
         console.error("❌ Σφάλμα στη διαγραφή ανακοίνωσης:", err);
         res.status(500).json({ error: "Σφάλμα στη βάση" });
     }
 });
+
 
 
 
