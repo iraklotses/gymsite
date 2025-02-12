@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5000;
 // ✅ CORS Middleware
 app.use(cors({
     origin: "https://gymsite-frontend.vercel.app", // Επιτρέπει το frontend URL
-    methods: "GET, POST",
+    methods: "GET, POST, DELETE",
     allowedHeaders: "Content-Type, Authorization"
 }));
 
