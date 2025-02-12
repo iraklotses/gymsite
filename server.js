@@ -123,28 +123,27 @@ app.get("/users", (req, res) => {
     });
 });
 
-app.get("/trainers", async (req, res) => {
-    try {
-        console.log("🔍 Request για trainers...");
-        const trainers = await db.query("SELECT * FROM trainers");  // Διόρθωσε αν χρειάζεται
-
-        if (!trainers || trainers.length === 0) {
+app.get("/trainers", (req, res) => {
+    console.log("🔍 Request για trainers...");
+    db.query("SELECT * FROM trainers", (err, results) => {
+        if (err) {
+            console.error("❌ Σφάλμα στη βάση:", err);
+            return res.status(500).json({ error: "Σφάλμα στη βάση" });
+        }
+        if (!results || results.length === 0) {
             console.log("⚠️ Δεν βρέθηκαν γυμναστές!");
             return res.status(404).json({ error: "Δεν βρέθηκαν γυμναστές" });
         }
-
-        res.json(trainers);
-    } catch (err) {
-        console.error("❌ Σφάλμα στο /trainers:", err);
-        res.status(500).json({ error: "Σφάλμα στη βάση" });
-    }
+        res.json(results);
+    });
 });
 
-
-
 app.get("/programs", (req, res) => {
-    db.query("SELECT id, name, capacity FROM programs", (err, results) => {
-        if (err) return res.status(500).json({ error: "Σφάλμα στη βάση" });
+    db.query("SELECT id, name, max_capacity FROM programs", (err, results) => {
+        if (err) {
+            console.error("❌ Σφάλμα στη βάση:", err);
+            return res.status(500).json({ error: "Σφάλμα στη βάση" });
+        }
         res.json(results);
     });
 });
