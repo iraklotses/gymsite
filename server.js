@@ -28,7 +28,7 @@ app.get("/", (req, res) => {
     res.send("🚀 Gym Management API is running!");
 });
 
-// 🔥 LOGIN ROUTE
+// 🔥 LOGIN ROUTE (Έλεγχος users & admins)
 app.post("/login", (req, res) => {
     const { email, password } = req.body;
 
@@ -37,7 +37,7 @@ app.post("/login", (req, res) => {
     }
 
     db.query(
-        "SELECT id, email FROM users WHERE email = ? AND password = ?",
+        "SELECT id, email, role FROM users WHERE email = ? AND password = ?",
         [email, password],
         (err, results) => {
             if (err) {
@@ -50,7 +50,8 @@ app.post("/login", (req, res) => {
                     message: "Επιτυχής σύνδεση!",
                     user: {
                         id: user.id,
-                        email: user.email
+                        email: user.email,
+                        role: user.role
                     }
                 });
             } else {
@@ -59,6 +60,7 @@ app.post("/login", (req, res) => {
         }
     );
 });
+
 
 // 🔥 PROFILE ROUTE
 app.get("/profile", (req, res) => {
