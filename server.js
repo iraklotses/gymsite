@@ -126,9 +126,10 @@ app.get("/users", (req, res) => {
 app.get("/trainers", (req, res) => {
     db.query("SELECT id, name, specialty FROM trainers", (err, results) => {
         if (err) return res.status(500).json({ error: "Σφάλμα στη βάση" });
-        res.json(results);
+        res.json(results); // Σιγουρευόμαστε ότι στέλνει array
     });
 });
+
 
 app.get("/programs", (req, res) => {
     db.query("SELECT id, name, capacity FROM programs", (err, results) => {
