@@ -123,12 +123,23 @@ app.get("/users", (req, res) => {
     });
 });
 
-app.get("/trainers", (req, res) => {
-    db.query("SELECT id, name, specialty FROM trainers", (err, results) => {
-        if (err) return res.status(500).json({ error: "Σφάλμα στη βάση" });
-        res.json(results); // Σιγουρευόμαστε ότι στέλνει array
-    });
+app.get("/trainers", async (req, res) => {
+    try {
+        console.log("🔍 Request για trainers...");
+        const trainers = await db.query("SELECT * FROM trainers");  // Διόρθωσε αν χρειάζεται
+
+        if (!trainers || trainers.length === 0) {
+            console.log("⚠️ Δεν βρέθηκαν γυμναστές!");
+            return res.status(404).json({ error: "Δεν βρέθηκαν γυμναστές" });
+        }
+
+        res.json(trainers);
+    } catch (err) {
+        console.error("❌ Σφάλμα στο /trainers:", err);
+        res.status(500).json({ error: "Σφάλμα στη βάση" });
+    }
 });
+
 
 
 app.get("/programs", (req, res) => {
