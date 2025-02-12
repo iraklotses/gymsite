@@ -93,17 +93,20 @@ app.get("/services", (req, res) => {
 });
 
 
-// 🔥 ΑΝΑΚΟΙΝΩΣΕΙΣ (Announcements)
-app.get("/announcements", (req, res) => {
-    db.query("SELECT title, content, DATE_FORMAT(created_at, '%d/%m/%Y') AS date FROM announcements ORDER BY created_at DESC", (err, results) => {
-        if (err) {
-            console.error("❌ Σφάλμα στη βάση ανακοινώσεων:", err);
-            return res.status(500).json({ error: "Σφάλμα στη βάση!", details: err });
+app.get("/announcements/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await db.query("SELECT * FROM announcements WHERE id = ?", [id]);
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: "Η ανακοίνωση δεν βρέθηκε" });
         }
 
-        console.log("📢 Ανακοινώσεις που επιστράφηκαν:", results);
-        res.json(results);
-    });
+        res.json(result[0]);
+    } catch (err) {
+        console.error("❌ Σφάλμα στο GET /announcements/:id:", err);
+        res.status(500).json({ error: "Σφάλμα στη βάση" });
+    }
 });
 
 //ΔΙΑΧΕΙΡΙΣΗ
