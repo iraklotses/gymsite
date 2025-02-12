@@ -92,6 +92,15 @@ app.get("/services", (req, res) => {
     });
 });
 
+app.get("/announcements", async (req, res) => {
+    try {
+        const result = await db.query("SELECT * FROM announcements");
+        res.json(result);
+    } catch (err) {
+        console.error("❌ Σφάλμα στο GET /announcements:", err);
+        res.status(500).json({ error: "Σφάλμα στη βάση" });
+    }
+});
 
 app.get("/announcements/:id", async (req, res) => {
     try {
