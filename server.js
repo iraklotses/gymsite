@@ -97,10 +97,11 @@ app.get("/announcements", async (req, res) => {
         const [result] = await db.query("SELECT * FROM announcements");
         res.json(result);
     } catch (err) {
-        console.error("❌ Σφάλμα στο GET /announcements:", err);
-        res.status(500).json({ error: "Σφάλμα στη βάση" });
+        console.error("❌ Σφάλμα στη βάση:", err);  // Εμφάνιση του πλήρους error
+        res.status(500).json({ error: "Σφάλμα στη βάση", details: err.message });
     }
 });
+
 
 
 app.get("/announcements/:id", async (req, res) => {
