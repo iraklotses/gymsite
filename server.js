@@ -1,6 +1,6 @@
 require("dotenv").config();
 const express = require("express");
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 const cors = require("cors");
 
 const app = express();
@@ -15,12 +15,22 @@ app.use(cors({
 
 app.use(express.json());
 
-// 🔗 Σύνδεση με τη MySQL βάση δεδομένων
-const db = mysql.createPool({
-    host: "sql.freedb.tech",
-    user: "freedb_Iraklotses",
-    password: "@t92BcDp7GQ$T6F",
-    database: "freedb_gym_database"
+// 🔗 Σύνδεση με τη MySQL βάση δεδομένων (Promise-based)
+let db;
+async function connectDB() {
+    db = await mysql.createPool({
+        host: "sql.freedb.tech",
+        user: "freedb_Iraklotses",
+        password: "@t92BcDp7GQ$T6F",
+        database: "freedb_gym_database",
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0
+    });
+    console.log("✅ Database connected!");
+}
+connectDB().catch(err => {
+    console.error("❌ Database connection failed:", err);
 });
 
 // ✅ Test route
