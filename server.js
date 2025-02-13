@@ -104,14 +104,17 @@ app.get("/announcements/:id", async (req, res) => {
 
 
 app.get("/announcements", async (req, res) => {
+    console.log("📢 Endpoint /announcements κλήθηκε!");
+
     try {
-        const [rows] = await db.query("SELECT * FROM announcements");
+        const [rows] = await db.promise().query("SELECT * FROM announcements");
         res.json(rows);
     } catch (error) {
         console.error("❌ Σφάλμα στη βάση:", error);
         res.status(500).json({ error: "Database error" });
     }
 });
+
 
 
 
