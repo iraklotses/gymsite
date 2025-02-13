@@ -92,17 +92,6 @@ app.get("/services", (req, res) => {
     });
 });
 
-app.get("/announcements/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const result = await db.query("SELECT * FROM announcements WHERE id = ?", [id]);
-
-        if (result.length === 0) {
-            return res.status(404).json({ error: "Η ανακοίνωση δεν βρέθηκε" });
-        }
-
-
-
 app.get("/announcements", async (req, res) => {
     console.log("📢 Endpoint /announcements κλήθηκε!");
 
@@ -114,9 +103,6 @@ app.get("/announcements", async (req, res) => {
         res.status(500).json({ error: "Database error" });
     }
 });
-
-
-
 
         res.json(result[0]);
     } catch (err) {
