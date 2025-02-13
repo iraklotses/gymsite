@@ -92,15 +92,14 @@ app.get("/services", (req, res) => {
     });
 });
 
-app.get("/announcements", async (req, res) => {
+app.get("/announcements/:id", async (req, res) => {
     try {
-        const [result] = await db.query("SELECT * FROM announcements");
-        res.json(result);
-    } catch (err) {
-        console.error("❌ Σφάλμα στη βάση:", err);  // Εμφάνιση του πλήρους error
-        res.status(500).json({ error: "Σφάλμα στη βάση", details: err.message });
-    }
-});
+        const { id } = req.params;
+        const result = await db.query("SELECT * FROM announcements WHERE id = ?", [id]);
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: "Η ανακοίνωση δεν βρέθηκε" });
+        }
 
 
 
