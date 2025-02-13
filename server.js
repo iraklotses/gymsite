@@ -104,14 +104,16 @@ app.get("/announcements", async (req, res) => {
 
 
 
-app.get("/announcements/:id", async (req, res) => {
+app.get("/announcements", async (req, res) => {
     try {
-        const { id } = req.params;
-        const result = await db.query("SELECT * FROM announcements WHERE id = ?", [id]);
+        const [rows] = await db.promise().query("SELECT * FROM announcements");
+        res.json(rows);
+    } catch (error) {
+        console.error("Database error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
 
-        if (result.length === 0) {
-            return res.status(404).json({ error: "Η ανακοίνωση δεν βρέθηκε" });
-        }
 
         res.json(result[0]);
     } catch (err) {
