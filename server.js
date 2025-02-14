@@ -183,16 +183,16 @@ app.put("/trainers/:id", async (req, res) => {
         const { id } = req.params;
         const { full_name, specialty } = req.body;
 
-        console.log("Updating trainer:", id, req.body); // 🔍 DEBUG
-        
+        console.log("Received PUT request for trainer:", id);
+        console.log("Received Data:", req.body);
+
         if (!full_name || !specialty) {
+            console.log("Missing fields!");
             return res.status(400).json({ error: "Missing required fields" });
         }
-        
-        const trainerId = Number(id);
 
         const result = await db("trainers")
-            .where({ id: trainerId })
+            .where({ id })
             .update({ full_name, specialty });
 
         if (result) {
@@ -201,10 +201,11 @@ app.put("/trainers/:id", async (req, res) => {
             res.status(404).json({ error: "Trainer not found" });
         }
     } catch (error) {
-        console.error("Update error:", error);
+        console.error("Update error:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
 
 
 // 📅 Επεξεργασία Προγράμματος
