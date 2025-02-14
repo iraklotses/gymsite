@@ -23,6 +23,8 @@ const db = mysql.createPool({
     database: "freedb_gym_database"
 });
 
+app.use(express.json());
+
 // ✅ Test route
 app.get("/", (req, res) => {
     res.send("🚀 Gym Management API is running!");
