@@ -179,25 +179,29 @@ app.put("/users/:id", async (req, res) => {
 
 // 🏋️‍♂️ Επεξεργασία Γυμναστή
 app.put("/trainers/:id", async (req, res) => {
-    const { id } = req.params;
-    const { full_name, specialty } = req.body;
-    
     try {
-        const result = await pool.query(
-            "UPDATE trainers SET full_name = $1, specialty = $2 WHERE id = $3 RETURNING *",
-            [full_name, specialty, id]
-        );
+        const { id } = req.params;
+        const { full_name, specialty } = req.body;
 
-        if (result.rowCount === 0) {
-            return res.status(404).json({ error: "Trainer not found" });
+        if (!full_name || !specialty) {
+            return res.status(400).json({ error: "Missing required fields" });
         }
 
-        res.json({ message: "Trainer updated successfully", trainer: result.rows[0] });
+        const result = await db("trainers")
+            .where({ id })
+            .update({ full_name, specialty });
+
+        if (result) {
+            res.json({ message: "Trainer updated successfully" });
+        } else {
+            res.status(404).json({ error: "Trainer not found" });
+        }
     } catch (error) {
-        console.error(error);
+        console.error("Update error:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
 
 // 📅 Επεξεργασία Προγράμματος
 app.put("/programs/:id", async (req, res) => {
