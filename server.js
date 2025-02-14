@@ -106,34 +106,30 @@ app.get("/announcements", async (req, res) => {
 
 //ΔΙΑΧΕΙΡΙΣΗ
 
-app.post("/users", async (req, res) => {
-    try {
-        const { full_name, email, password, role } = req.body;
+app.post("/users", (req, res) => {
+    const { full_name, email, password, role } = req.body;
 
-        console.log("Received POST request for new user");
-        console.log("Received Data:", req.body);
+    console.log("📨 New User Request:", req.body); // Debugging
 
-        if (!full_name || !email || !password || !role) {
-            return res.status(400).json({ error: "Missing required fields" });
-        }
-
-        db.query(
-            "INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)",
-            [full_name, email, password, role],
-            (err, result) => {
-                if (err) {
-                    console.error("Insert error:", err);
-                    return res.status(500).json({ error: "Internal Server Error" });
-                }
-
-                res.status(201).json({ message: "User created successfully", user_id: result.insertId });
-            }
-        );
-    } catch (error) {
-        console.error("Unexpected error:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+    if (!full_name || !email || !password || !role) {
+        console.log("❌ Missing fields!");
+        return res.status(400).json({ error: "All fields are required!" });
     }
+
+    db.query(
+        "INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)",
+        [full_name, email, password, role],
+        (err, result) => {
+            if (err) {
+                console.error("❌ Database Insert Error:", err);
+                return res.status(500).json({ error: "Internal Server Error", details: err });
+            }
+
+            res.status(201).json({ message: "User created successfully!", user_id: result.insertId });
+        }
+    );
 });
+
 
 
 app.get("/users", (req, res) => {
