@@ -155,6 +155,72 @@ app.post("/programs", (req, res) => {
     });
 });
 
+// 🏋️ Επεξεργασία Χρήστη
+app.put("/users/:id", async (req, res) => {
+    const { id } = req.params;
+    const { full_name, email, role } = req.body;
+    
+    try {
+        const result = await pool.query(
+            "UPDATE users SET full_name = $1, email = $2, role = $3 WHERE id = $4 RETURNING *",
+            [full_name, email, role, id]
+        );
+        
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json({ message: "User updated successfully", user: result.rows[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+// 🏋️‍♂️ Επεξεργασία Γυμναστή
+app.put("/trainers/:id", async (req, res) => {
+    const { id } = req.params;
+    const { full_name, specialty } = req.body;
+    
+    try {
+        const result = await pool.query(
+            "UPDATE trainers SET full_name = $1, specialty = $2 WHERE id = $3 RETURNING *",
+            [full_name, specialty, id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Trainer not found" });
+        }
+
+        res.json({ message: "Trainer updated successfully", trainer: result.rows[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+// 📅 Επεξεργασία Προγράμματος
+app.put("/programs/:id", async (req, res) => {
+    const { id } = req.params;
+    const { name, trainer_id, day_of_week, time, max_capacity } = req.body;
+
+    try {
+        const result = await pool.query(
+            "UPDATE programs SET name = $1, trainer_id = $2, day_of_week = $3, time = $4, max_capacity = $5 WHERE id = $6 RETURNING *",
+            [name, trainer_id, day_of_week, time, max_capacity, id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Program not found" });
+        }
+
+        res.json({ message: "Program updated successfully", program: result.rows[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
 app.delete("/programs/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -213,9 +279,6 @@ app.delete("/announcements/:id", async (req, res) => {
         res.status(500).json({ error: "Σφάλμα στη βάση" });
     }
 });
-
-
-
 
 // ✅ Εκκίνηση Server
 app.listen(PORT, () => {
