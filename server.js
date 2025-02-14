@@ -183,6 +183,8 @@ app.put("/trainers/:id", async (req, res) => {
         const { id } = req.params;
         const { full_name, specialty } = req.body;
 
+        console.log("Updating trainer:", id, req.body); // 🔍 DEBUG
+        
         if (!full_name || !specialty) {
             return res.status(400).json({ error: "Missing required fields" });
         }
