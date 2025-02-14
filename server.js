@@ -188,9 +188,11 @@ app.put("/trainers/:id", async (req, res) => {
         if (!full_name || !specialty) {
             return res.status(400).json({ error: "Missing required fields" });
         }
+        
+        const trainerId = Number(id);
 
         const result = await db("trainers")
-            .where({ id })
+            .where({ id: trainerId })
             .update({ full_name, specialty });
 
         if (result) {
