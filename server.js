@@ -106,13 +106,35 @@ app.get("/announcements", async (req, res) => {
 
 //ΔΙΑΧΕΙΡΙΣΗ
 
-app.post("/announcements", (req, res) => {
-    const { title, content } = req.body;
-    db.query("INSERT INTO announcements (title, content) VALUES (?, ?)", [title, content], (err) => {
-        if (err) return res.status(500).json({ error: "Σφάλμα κατά την εισαγωγή!" });
-        res.json({ success: true, message: "Η ανακοίνωση προστέθηκε!" });
-    });
+app.post("/users", async (req, res) => {
+    try {
+        const { full_name, email, password, role } = req.body;
+
+        console.log("Received POST request for new user");
+        console.log("Received Data:", req.body);
+
+        if (!full_name || !email || !password || !role) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        db.query(
+            "INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)",
+            [full_name, email, password, role],
+            (err, result) => {
+                if (err) {
+                    console.error("Insert error:", err);
+                    return res.status(500).json({ error: "Internal Server Error" });
+                }
+
+                res.status(201).json({ message: "User created successfully", user_id: result.insertId });
+            }
+        );
+    } catch (error) {
+        console.error("Unexpected error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
 });
+
 
 app.get("/users", (req, res) => {
     db.query("SELECT id, full_name, email, role FROM users", (err, results) => {
@@ -146,14 +168,94 @@ app.get("/programs", (req, res) => {
     });
 });
 
+app.post("/trainers", async (req, res) => {
+    try {
+        const { full_name, specialty } = req.body;
 
-app.post("/programs", (req, res) => {
-    const { name, capacity } = req.body;
-    db.query("INSERT INTO programs (name, capacity) VALUES (?, ?)", [name, capacity], (err) => {
-        if (err) return res.status(500).json({ error: "Σφάλμα κατά την εισαγωγή!" });
-        res.json({ success: true, message: "Το πρόγραμμα προστέθηκε!" });
-    });
+        console.log("Received POST request for new trainer");
+        console.log("Received Data:", req.body);
+
+        if (!full_name || !specialty) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        db.query(
+            "INSERT INTO trainers (full_name, specialty) VALUES (?, ?)",
+            [full_name, specialty],
+            (err, result) => {
+                if (err) {
+                    console.error("Insert error:", err);
+                    return res.status(500).json({ error: "Internal Server Error" });
+                }
+
+                res.status(201).json({ message: "Trainer created successfully", trainer_id: result.insertId });
+            }
+        );
+    } catch (error) {
+        console.error("Unexpected error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
 });
+
+
+app.post("/programs", async (req, res) => {
+    try {
+        const { name, trainer_id, day_of_week, time, max_capacity } = req.body;
+
+        console.log("Received POST request for new program");
+        console.log("Received Data:", req.body);
+
+        if (!name || !trainer_id || !day_of_week || !time || !max_capacity) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        db.query(
+            "INSERT INTO programs (name, trainer_id, day_of_week, time, max_capacity) VALUES (?, ?, ?, ?, ?)",
+            [name, trainer_id, day_of_week, time, max_capacity],
+            (err, result) => {
+                if (err) {
+                    console.error("Insert error:", err);
+                    return res.status(500).json({ error: "Internal Server Error" });
+                }
+
+                res.status(201).json({ message: "Program created successfully", program_id: result.insertId });
+            }
+        );
+    } catch (error) {
+        console.error("Unexpected error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+app.post("/announcements", async (req, res) => {
+    try {
+        const { title, content } = req.body;
+
+        console.log("Received POST request for new announcement");
+        console.log("Received Data:", req.body);
+
+        if (!title || !content) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        db.query(
+            "INSERT INTO announcements (title, content) VALUES (?, ?)",
+            [title, content],
+            (err, result) => {
+                if (err) {
+                    console.error("Insert error:", err);
+                    return res.status(500).json({ error: "Internal Server Error" });
+                }
+
+                res.status(201).json({ message: "Announcement created successfully", announcement_id: result.insertId });
+            }
+        );
+    } catch (error) {
+        console.error("Unexpected error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
 
 // 🏋️ Επεξεργασία Χρήστη
 app.put("/users/:id", async (req, res) => {
