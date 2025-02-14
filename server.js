@@ -191,17 +191,24 @@ app.put("/trainers/:id", async (req, res) => {
             return res.status(400).json({ error: "Missing required fields" });
         }
 
-        const result = await db("trainers")
-            .where({ id })
-            .update({ full_name, specialty });
+        db.query(
+            "UPDATE trainers SET full_name = ?, specialty = ? WHERE id = ?",
+            [full_name, specialty, id],
+            (err, result) => {
+                if (err) {
+                    console.error("Update error:", err);
+                    return res.status(500).json({ error: "Internal Server Error" });
+                }
 
-        if (result) {
-            res.json({ message: "Trainer updated successfully" });
-        } else {
-            res.status(404).json({ error: "Trainer not found" });
-        }
+                if (result.affectedRows === 0) {
+                    return res.status(404).json({ error: "Trainer not found" });
+                }
+
+                res.json({ message: "Trainer updated successfully" });
+            }
+        );
     } catch (error) {
-        console.error("Update error:", error.message);
+        console.error("Unexpected error:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
