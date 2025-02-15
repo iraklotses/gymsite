@@ -116,6 +116,8 @@ app.post("/register", async (req, res) => {
             return res.status(400).json({ error: "Όλα τα πεδία είναι υποχρεωτικά." });
         }
 
+            console.log("Received Register Request:", req.body); // Debugging
+            res.status(200).json({ message: "Debugging Response" });
         // Έλεγχος αν υπάρχει ήδη χρήστης με το ίδιο email
         db.query(
             "SELECT * FROM users WHERE email = ?",
