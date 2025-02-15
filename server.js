@@ -115,7 +115,7 @@ app.get("/pending_users", async (req, res) => {
     });
 });
 
-app.post("/approve-user", async (req, res) => {
+app.post("/approve_user", async (req, res) => {
     const { id, role } = req.body; // Ο διαχειριστής επιλέγει το ρόλο (user/admin)
 
     if (!id || !role) {
@@ -145,7 +145,7 @@ app.post("/approve-user", async (req, res) => {
     });
 });
 
-app.post("/reject-user", async (req, res) => {
+app.post("/reject_user", async (req, res) => {
     const { id } = req.body;
 
     if (!id) {
