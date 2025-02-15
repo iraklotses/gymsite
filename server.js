@@ -61,38 +61,6 @@ app.post("/login", (req, res) => {
     );
 });
 
-document.getElementById("registerForm").addEventListener("submit", async function(event) {
-    event.preventDefault(); // Αποτρέπει το default submit
-
-    const formData = {
-        first_name: document.getElementById("first_name").value,
-        last_name: document.getElementById("last_name").value,
-        email: document.getElementById("email").value,
-        password: document.getElementById("password").value
-    };
-
-    try {
-        const response = await fetch("https://gymsite-six.vercel.app/register", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(formData)
-        });
-
-        const result = await response.json();
-        if (response.ok) {
-            alert("Επιτυχής εγγραφή! Περιμένετε έγκριση από τον διαχειριστή.");
-            document.getElementById("registerForm").reset(); // Καθαρίζει τη φόρμα
-        } else {
-            alert("Σφάλμα: " + result.error);
-        }
-    } catch (error) {
-        console.error("Error:", error);
-        alert("Πρόβλημα σύνδεσης με τον server.");
-    }
-});
-
 
 // 🔥 PROFILE ROUTE
 app.get("/profile", (req, res) => {
@@ -140,17 +108,17 @@ app.get("/announcements", async (req, res) => {
 
 app.post("/register", async (req, res) => {
     try {
-        const { first_name, last_name, email, username, password } = req.body;
+        const { first_name, last_name, email, password } = req.body;
 
         console.log("Received registration request:", req.body);
 
-        if (!first_name || !last_name || !email || !username || !password) {
+        if (!first_name || !last_name || !email || !password) {
             return res.status(400).json({ error: "Missing required fields" });
         }
 
         db.query(
-            "INSERT INTO users (first_name, last_name, email, username, password, role) VALUES (?, ?, ?, ?, ?, NULL)",
-            [first_name, last_name, email, username, password],
+            "INSERT INTO users (first_name, last_name, email, password, role) VALUES (?, ?, ?, ?, ?, NULL)",
+            [first_name, last_name, email, password],
             (err, result) => {
                 if (err) {
                     console.error("Insert error:", err);
