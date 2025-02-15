@@ -537,6 +537,95 @@ app.delete("/announcements/:id", async (req, res) => {
     }
 });
 
+// ✅ 1. Φόρτωση όλων των προγραμμάτων
+app.get("/api/programs", (req, res) => {
+    db.query("SELECT id, name FROM programs", (err, results) => {
+        if (err) return res.status(500).json({ error: err });
+        res.json(results);
+    });
+});
+
+// ✅ 2. Φόρτωση ημερών για ένα πρόγραμμα
+app.get("/api/program_days", (req, res) => {
+    const { programId } = req.query;
+    db.query("SELECT DISTINCT day_of_week FROM programs WHERE id = ?", [programId], (err, results) => {
+        if (err) return res.status(500).json({ error: err });
+        res.json(results);
+    });
+});
+
+// ✅ 3. Φόρτωση διαθέσιμων ωρών για ένα πρόγραμμα και ημέρα
+app.get("/api/program_times", (req, res) => {
+    const { programId, day } = req.query;
+    db.query("SELECT time FROM programs WHERE id = ? AND day_of_week = ?", [programId, day], (err, results) => {
+        if (err) return res.status(500).json({ error: err });
+        res.json(results);
+    });
+});
+
+// ✅ 4. Έλεγχος διαθεσιμότητας
+app.get("/api/check_availability", (req, res) => {
+    const { programId, day, time } = req.query;
+    db.query("SELECT capacity FROM programs WHERE id = ? AND day_of_week = ? AND time = ?", 
+        [programId, day, time], 
+        (err, results) => {
+            if (err) return res.status(500).json({ error: err });
+            if (results.length > 0 && results[0].capacity > 0) {
+                res.json({ available: true, capacity: results[0].capacity });
+            } else {
+                res.json({ available: false });
+            }
+        }
+    );
+});
+
+// ✅ 5. Κράτηση προγράμματος
+app.post("/api/book_program", (req, res) => {
+    const { email, programId, day, time } = req.body;
+
+    // Έλεγχος αν υπάρχει διαθέσιμη θέση
+    db.query("SELECT capacity FROM programs WHERE id = ? AND day_of_week = ? AND time = ?", 
+        [programId, day, time], 
+        (err, results) => {
+            if (err) return res.status(500).json({ error: err });
+
+            if (results.length > 0 && results[0].capacity > 0) {
+                // Μείωση χωρητικότητας
+                db.query("UPDATE programs SET capacity = capacity - 1 WHERE id = ? AND day_of_week = ? AND time = ?", 
+                    [programId, day, time], 
+                    (updateErr) => {
+                        if (updateErr) return res.status(500).json({ error: updateErr });
+
+                        // Αποθήκευση κράτησης
+                        db.query("INSERT INTO bookings (email, program_id, day, time) VALUES (?, ?, ?, ?)", 
+                            [email, programId, day, time], 
+                            (insertErr) => {
+                                if (insertErr) return res.status(500).json({ error: insertErr });
+                                res.json({ success: true });
+                            }
+                        );
+                    }
+                );
+            } else {
+                res.json({ success: false, message: "No available slots!" });
+            }
+        }
+    );
+});
+
+// ✅ 6. Φόρτωση κρατήσεων χρήστη
+app.get("/api/my_bookings", (req, res) => {
+    const { email } = req.query;
+    db.query(
+        "SELECT programs.name AS program_name, bookings.day, bookings.time FROM bookings JOIN programs ON bookings.program_id = programs.id WHERE bookings.email = ?", 
+        [email], 
+        (err, results) => {
+            if (err) return res.status(500).json({ error: err });
+            res.json(results);
+        }
+    );
+});
+
 // ✅ Εκκίνηση Server
 app.listen(PORT, () => {
     console.log(`🔥 Server running on http://localhost:${PORT}`);
