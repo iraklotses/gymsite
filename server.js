@@ -106,27 +106,26 @@ app.get("/announcements", async (req, res) => {
 
 //ΔΙΑΧΕΙΡΙΣΗ
 
-app.post("/users", async (req, res) => {
+app.post("/register", async (req, res) => {
     try {
-        const { full_name, email, password, role } = req.body;
+        const { first_name, last_name, email, username, password } = req.body;
 
-        console.log("Received POST request for new user");
-        console.log("Received Data:", req.body);
+        console.log("Received registration request:", req.body);
 
-        if (!full_name || !email || !password || !role) {
+        if (!first_name || !last_name || !email || !username || !password) {
             return res.status(400).json({ error: "Missing required fields" });
         }
 
         db.query(
-            "INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)",
-            [full_name, email, password, role],
+            "INSERT INTO users (first_name, last_name, email, username, password, role) VALUES (?, ?, ?, ?, ?, NULL)",
+            [first_name, last_name, email, username, password],
             (err, result) => {
                 if (err) {
                     console.error("Insert error:", err);
                     return res.status(500).json({ error: "Internal Server Error" });
                 }
 
-                res.status(201).json({ message: "User created successfully", user_id: result.insertId });
+                res.status(201).json({ message: "User registered successfully, pending approval" });
             }
         );
     } catch (error) {
@@ -134,8 +133,6 @@ app.post("/users", async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
-
-
 
 app.get("/users", (req, res) => {
     db.query("SELECT id, full_name, email, role FROM users", (err, results) => {
