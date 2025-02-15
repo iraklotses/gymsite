@@ -68,7 +68,6 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         first_name: document.getElementById("first_name").value,
         last_name: document.getElementById("last_name").value,
         email: document.getElementById("email").value,
-        username: document.getElementById("username").value,
         password: document.getElementById("password").value
     };
 
