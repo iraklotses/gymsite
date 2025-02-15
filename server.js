@@ -160,20 +160,27 @@ app.post("/approve_user", async (req, res) => {
 });
 
 
-app.post("/reject_user", async (req, res) => {
-    const { id } = req.body;
+app.delete("/reject_user", async (req, res) => {
+    const { userId } = req.body; // Λαμβάνουμε το ID του χρήστη
 
-    if (!id) {
+    if (!userId) {
         return res.status(400).json({ error: "Missing user ID" });
     }
 
-    db.query("DELETE FROM pending_users WHERE id = ?", [id], (err) => {
+    db.query("DELETE FROM pending_users WHERE id = ?", [userId], (err, result) => {
         if (err) {
-            return res.status(500).json({ error: "Could not remove from pending_users" });
+            console.error("Error deleting user:", err);
+            return res.status(500).json({ error: "Failed to delete user" });
         }
-        res.json({ message: "User rejected successfully" });
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json({ message: "User rejected and deleted from pending_users" });
     });
 });
+
 
 
 app.post("/register", async (req, res) => {
