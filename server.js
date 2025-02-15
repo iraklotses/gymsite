@@ -110,41 +110,19 @@ app.post("/register", async (req, res) => {
     try {
         const { full_name, email, password } = req.body;
 
-        console.log("Received Registration Request:", req.body);
-
         if (!full_name || !email || !password) {
-            return res.status(400).json({ error: "Όλα τα πεδία είναι υποχρεωτικά." });
+            return res.status(400).json({ error: "Missing required fields" });
         }
 
-            console.log("Received Register Request:", req.body); // Debugging
-            res.status(200).json({ message: "Debugging Response" });
-        // Έλεγχος αν υπάρχει ήδη χρήστης με το ίδιο email
         db.query(
-            "SELECT * FROM users WHERE email = ?",
-            [email],
-            (err, results) => {
+            "INSERT INTO pending_users (full_name, email, password) VALUES (?, ?, ?)",
+            [full_name, email, password],
+            (err, result) => {
                 if (err) {
-                    console.error("Database error:", err);
-                    return res.status(500).json({ error: "Σφάλμα βάσης δεδομένων." });
+                    console.error("Insert error:", err);
+                    return res.status(500).json({ error: "Internal Server Error" });
                 }
-
-                if (results.length > 0) {
-                    return res.status(400).json({ error: "Το email χρησιμοποιείται ήδη." });
-                }
-
-                // Αν δεν υπάρχει, εισαγωγή χρήστη με default role 'pending'
-                db.query(
-                    "INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)",
-                    [full_name, email, password, "pending"],
-                    (err, result) => {
-                        if (err) {
-                            console.error("Insert error:", err);
-                            return res.status(500).json({ error: "Σφάλμα κατά την εγγραφή." });
-                        }
-
-                        res.status(201).json({ message: "Η εγγραφή ήταν επιτυχής! Περιμένετε έγκριση από τον διαχειριστή.", user_id: result.insertId });
-                    }
-                );
+                res.status(201).json({ message: "Επιτυχής εγγραφή! Περιμένετε έγκριση από τον διαχειριστή." });
             }
         );
     } catch (error) {
@@ -152,6 +130,7 @@ app.post("/register", async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
 
 
 app.get("/users", (req, res) => {
