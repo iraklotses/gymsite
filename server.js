@@ -116,34 +116,49 @@ app.get("/pending_users", async (req, res) => {
 });
 
 app.post("/approve_user", async (req, res) => {
-    const { id, role } = req.body; // Ο διαχειριστής επιλέγει το ρόλο (user/admin)
+    const { userId, role } = req.body;
 
-    if (!id || !role) {
+    if (!userId || !role) {
         return res.status(400).json({ error: "Missing user ID or role" });
     }
 
-    db.query("SELECT * FROM pending_users WHERE id = ?", [id], (err, results) => {
-        if (err || results.length === 0) {
+    // Βρίσκουμε τον χρήστη από το pending_users
+    db.query("SELECT * FROM pending_users WHERE id = ?", [userId], (err, results) => {
+        if (err) {
+            console.error("Error fetching user:", err);
+            return res.status(500).json({ error: "Internal Server Error" });
+        }
+
+        if (results.length === 0) {
             return res.status(404).json({ error: "User not found" });
         }
 
-        const { full_name, email, password } = results[0];
+        const user = results[0];
 
+        // Μεταφορά του χρήστη στον πίνακα `users`
         db.query(
             "INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)",
-            [full_name, email, password, role],
+            [user.full_name, user.email, user.password, role], // Προσθήκη role
             (err) => {
-                if (err) return res.status(500).json({ error: "Internal Server Error" });
+                if (err) {
+                    console.error("Error inserting user:", err);
+                    return res.status(500).json({ error: "Failed to approve user" });
+                }
 
-                db.query("DELETE FROM pending_users WHERE id = ?", [id], (err) => {
-                    if (err) return res.status(500).json({ error: "Could not remove from pending_users" });
+                // Διαγραφή από το pending_users
+                db.query("DELETE FROM pending_users WHERE id = ?", [userId], (err) => {
+                    if (err) {
+                        console.error("Error deleting user from pending_users:", err);
+                        return res.status(500).json({ error: "Failed to remove from pending_users" });
+                    }
 
-                    res.json({ message: "User approved successfully" });
+                    res.json({ message: "User approved and moved to users table" });
                 });
             }
         );
     });
 });
+
 
 app.post("/reject_user", async (req, res) => {
     const { id } = req.body;
