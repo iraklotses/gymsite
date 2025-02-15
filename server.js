@@ -105,6 +105,61 @@ app.get("/announcements", async (req, res) => {
 });
 
 //ΔΙΑΧΕΙΡΙΣΗ
+app.get("/pending-users", async (req, res) => {
+    db.query("SELECT * FROM pending_users", (err, results) => {
+        if (err) {
+            console.error("Fetch error:", err);
+            return res.status(500).json({ error: "Internal Server Error" });
+        }
+        res.json(results);
+    });
+});
+
+app.post("/approve-user", async (req, res) => {
+    const { id, role } = req.body; // Ο διαχειριστής επιλέγει το ρόλο (user/admin)
+
+    if (!id || !role) {
+        return res.status(400).json({ error: "Missing user ID or role" });
+    }
+
+    db.query("SELECT * FROM pending_users WHERE id = ?", [id], (err, results) => {
+        if (err || results.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const { full_name, email, password } = results[0];
+
+        db.query(
+            "INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)",
+            [full_name, email, password, role],
+            (err) => {
+                if (err) return res.status(500).json({ error: "Internal Server Error" });
+
+                db.query("DELETE FROM pending_users WHERE id = ?", [id], (err) => {
+                    if (err) return res.status(500).json({ error: "Could not remove from pending_users" });
+
+                    res.json({ message: "User approved successfully" });
+                });
+            }
+        );
+    });
+});
+
+app.post("/reject-user", async (req, res) => {
+    const { id } = req.body;
+
+    if (!id) {
+        return res.status(400).json({ error: "Missing user ID" });
+    }
+
+    db.query("DELETE FROM pending_users WHERE id = ?", [id], (err) => {
+        if (err) {
+            return res.status(500).json({ error: "Could not remove from pending_users" });
+        }
+        res.json({ message: "User rejected successfully" });
+    });
+});
+
 
 app.post("/register", async (req, res) => {
     try {
