@@ -105,7 +105,7 @@ app.get("/announcements", async (req, res) => {
 });
 
 //ΔΙΑΧΕΙΡΙΣΗ
-app.get("/pending-users", async (req, res) => {
+app.get("/pending_users", async (req, res) => {
     db.query("SELECT * FROM pending_users", (err, results) => {
         if (err) {
             console.error("Fetch error:", err);
