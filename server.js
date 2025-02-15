@@ -537,6 +537,89 @@ app.delete("/announcements/:id", async (req, res) => {
     }
 });
 
+app.post("/check-availability", async (req, res) => {
+    const { program_id, date, time_slot } = req.body;
+
+    if (!program_id || !date || !time_slot) {
+        return res.status(400).json({ error: "Missing program ID, date, or time slot" });
+    }
+
+    const maxCapacity = 10; // Μέγιστος αριθμός συμμετεχόντων (ρυθμίστε ανάλογα)
+    
+    db.query(
+        "SELECT COUNT(*) AS count FROM reservations WHERE program_id = ? AND date = ? AND time_slot = ?",
+        [program_id, date, time_slot],
+        (err, results) => {
+            if (err) {
+                console.error("Database error:", err);
+                return res.status(500).json({ error: "Internal Server Error" });
+            }
+
+            const bookedSlots = results[0].count;
+            const availableSlots = maxCapacity - bookedSlots;
+
+            res.json({ available: availableSlots > 0, availableSlots });
+        }
+    );
+});
+
+app.post("/book", async (req, res) => {
+    const { user_id, program_id, date, time_slot } = req.body;
+
+    if (!user_id || !program_id || !date || !time_slot) {
+        return res.status(400).json({ error: "Missing user ID, program ID, date, or time slot" });
+    }
+
+    // Ελέγχουμε αν υπάρχουν διαθέσιμες θέσεις
+    db.query(
+        "SELECT COUNT(*) AS count FROM reservations WHERE program_id = ? AND date = ? AND time_slot = ?",
+        [program_id, date, time_slot],
+        (err, results) => {
+            if (err) {
+                console.error("Database error:", err);
+                return res.status(500).json({ error: "Internal Server Error" });
+            }
+
+            const maxCapacity = 10;
+            const bookedSlots = results[0].count;
+
+            if (bookedSlots >= maxCapacity) {
+                return res.status(400).json({ error: "No available slots" });
+            }
+
+            // Κάνουμε την κράτηση
+            db.query(
+                "INSERT INTO reservations (user_id, program_id, date, time_slot) VALUES (?, ?, ?, ?)",
+                [user_id, program_id, date, time_slot],
+                (err, result) => {
+                    if (err) {
+                        console.error("Database error:", err);
+                        return res.status(500).json({ error: "Internal Server Error" });
+                    }
+                    res.json({ success: true, message: "Booking confirmed!" });
+                }
+            );
+        }
+    );
+});
+
+app.get("/reservations/:user_id", async (req, res) => {
+    const { user_id } = req.params;
+
+    db.query(
+        "SELECT r.id, p.name AS program_name, r.date, r.time_slot FROM reservations r JOIN programs p ON r.program_id = p.id WHERE r.user_id = ? ORDER BY r.date, r.time_slot",
+        [user_id],
+        (err, results) => {
+            if (err) {
+                console.error("Database error:", err);
+                return res.status(500).json({ error: "Internal Server Error" });
+            }
+            res.json(results);
+        }
+    );
+});
+
+
 // ✅ Εκκίνηση Server
 app.listen(PORT, () => {
     console.log(`🔥 Server running on http://localhost:${PORT}`);
