@@ -108,11 +108,11 @@ app.get("/announcements", async (req, res) => {
 
 app.post("/register", async (req, res) => {
     try {
-        const { first_name, last_name, email, password } = req.body;
+        const { full_name, email, password } = req.body;
 
         console.log("Received Registration Request:", req.body);
 
-        if (!first_name || !last_name || !email || !password) {
+        if (!full_name || !email || !password) {
             return res.status(400).json({ error: "Όλα τα πεδία είναι υποχρεωτικά." });
         }
 
@@ -133,7 +133,7 @@ app.post("/register", async (req, res) => {
                 // Αν δεν υπάρχει, εισαγωγή χρήστη με default role 'pending'
                 db.query(
                     "INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)",
-                    [`${first_name} ${last_name}`, email, password, "pending"],
+                    [full_name, email, password, "pending"],
                     (err, result) => {
                         if (err) {
                             console.error("Insert error:", err);
