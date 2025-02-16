@@ -538,31 +538,40 @@ app.delete("/announcements/:id", async (req, res) => {
 });
 
 
-// ✅ 2. Φόρτωση ημερών για ένα πρόγραμμα
-app.get("program_days", (req, res) => {
+app.get("/program_days", (req, res) => {
     const { programId } = req.query;
-    db.query("SELECT DISTINCT day_of_week FROM programs WHERE id = ?", [programId], (err, results) => {
-        if (err) return res.status(500).json({ error: err });
-        res.json(results);
-    });
+    db.query(
+        "SELECT DISTINCT day_of_week FROM program_schedule WHERE program_id = ?", 
+        [programId], 
+        (err, results) => {
+            if (err) return res.status(500).json({ error: err });
+            res.json(results);
+        }
+    );
 });
 
 // ✅ 3. Φόρτωση διαθέσιμων ωρών για ένα πρόγραμμα και ημέρα
-app.get("program_times", (req, res) => {
+app.get("/program_times", (req, res) => {
     const { programId, day } = req.query;
-    db.query("SELECT time FROM programs WHERE id = ? AND day_of_week = ?", [programId, day], (err, results) => {
-        if (err) return res.status(500).json({ error: err });
-        res.json(results);
-    });
+    db.query(
+        "SELECT time FROM program_schedule WHERE program_id = ? AND day_of_week = ?", 
+        [programId, day], 
+        (err, results) => {
+            if (err) return res.status(500).json({ error: err });
+            res.json(results);
+        }
+    );
 });
 
 // ✅ 4. Έλεγχος διαθεσιμότητας
-app.get("check_availability", (req, res) => {
+app.get("/check_availability", (req, res) => {
     const { programId, day, time } = req.query;
-    db.query("SELECT capacity FROM programs WHERE id = ? AND day_of_week = ? AND time = ?", 
+    db.query(
+        "SELECT capacity FROM program_schedule WHERE program_id = ? AND day_of_week = ? AND time = ?", 
         [programId, day, time], 
         (err, results) => {
             if (err) return res.status(500).json({ error: err });
+
             if (results.length > 0 && results[0].capacity > 0) {
                 res.json({ available: true, capacity: results[0].capacity });
             } else {
@@ -576,32 +585,48 @@ app.get("check_availability", (req, res) => {
 app.post("/book_program", (req, res) => {
     const { email, programId, day, time } = req.body;
 
-    // Έλεγχος αν υπάρχει διαθέσιμη θέση
-    db.query("SELECT capacity FROM programs WHERE id = ? AND day_of_week = ? AND time = ?", 
-        [programId, day, time], 
+    // ➤ Έλεγχος αν υπάρχει ήδη κράτηση
+    db.query(
+        "SELECT * FROM bookings WHERE email = ? AND program_id = ? AND day = ? AND time = ?", 
+        [email, programId, day, time], 
         (err, results) => {
             if (err) return res.status(500).json({ error: err });
 
-            if (results.length > 0 && results[0].capacity > 0) {
-                // Μείωση χωρητικότητας
-                db.query("UPDATE programs SET capacity = capacity - 1 WHERE id = ? AND day_of_week = ? AND time = ?", 
-                    [programId, day, time], 
-                    (updateErr) => {
-                        if (updateErr) return res.status(500).json({ error: updateErr });
+            if (results.length > 0) {
+                return res.status(400).json({ success: false, message: "Έχετε ήδη κάνει κράτηση!" });
+            }
 
-                        // Αποθήκευση κράτησης
-                        db.query("INSERT INTO bookings (email, program_id, day, time) VALUES (?, ?, ?, ?)", 
-                            [email, programId, day, time], 
-                            (insertErr) => {
-                                if (insertErr) return res.status(500).json({ error: insertErr });
-                                res.json({ success: true });
+            // ➤ Έλεγχος αν υπάρχει διαθέσιμη θέση
+            db.query(
+                "SELECT capacity FROM program_schedule WHERE program_id = ? AND day_of_week = ? AND time = ?", 
+                [programId, day, time], 
+                (err, results) => {
+                    if (err) return res.status(500).json({ error: err });
+
+                    if (results.length > 0 && results[0].capacity > 0) {
+                        // ➤ Μείωση χωρητικότητας
+                        db.query(
+                            "UPDATE program_schedule SET capacity = capacity - 1 WHERE program_id = ? AND day_of_week = ? AND time = ?", 
+                            [programId, day, time], 
+                            (updateErr) => {
+                                if (updateErr) return res.status(500).json({ error: updateErr });
+
+                                // ➤ Αποθήκευση κράτησης
+                                db.query(
+                                    "INSERT INTO bookings (email, program_id, day, time) VALUES (?, ?, ?, ?)", 
+                                    [email, programId, day, time], 
+                                    (insertErr) => {
+                                        if (insertErr) return res.status(500).json({ error: insertErr });
+                                        res.json({ success: true });
+                                    }
+                                );
                             }
                         );
+                    } else {
+                        res.status(400).json({ success: false, message: "Δεν υπάρχουν διαθέσιμες θέσεις!" });
                     }
-                );
-            } else {
-                res.json({ success: false, message: "No available slots!" });
-            }
+                }
+            );
         }
     );
 });
@@ -610,7 +635,10 @@ app.post("/book_program", (req, res) => {
 app.get("/my_bookings", (req, res) => {
     const { email } = req.query;
     db.query(
-        "SELECT programs.name AS program_name, bookings.day, bookings.time FROM bookings JOIN programs ON bookings.program_id = programs.id WHERE bookings.email = ?", 
+        `SELECT p.name AS program_name, b.day, b.time 
+         FROM bookings b 
+         JOIN programs p ON b.program_id = p.id 
+         WHERE b.email = ?`, 
         [email], 
         (err, results) => {
             if (err) return res.status(500).json({ error: err });
