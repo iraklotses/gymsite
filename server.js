@@ -537,16 +537,9 @@ app.delete("/announcements/:id", async (req, res) => {
     }
 });
 
-// ✅ 1. Φόρτωση όλων των προγραμμάτων
-app.get("/api/programs", (req, res) => {
-    db.query("SELECT id, name FROM programs", (err, results) => {
-        if (err) return res.status(500).json({ error: err });
-        res.json(results);
-    });
-});
 
 // ✅ 2. Φόρτωση ημερών για ένα πρόγραμμα
-app.get("/api/program_days", (req, res) => {
+app.get("program_days", (req, res) => {
     const { programId } = req.query;
     db.query("SELECT DISTINCT day_of_week FROM programs WHERE id = ?", [programId], (err, results) => {
         if (err) return res.status(500).json({ error: err });
@@ -555,7 +548,7 @@ app.get("/api/program_days", (req, res) => {
 });
 
 // ✅ 3. Φόρτωση διαθέσιμων ωρών για ένα πρόγραμμα και ημέρα
-app.get("/api/program_times", (req, res) => {
+app.get("program_times", (req, res) => {
     const { programId, day } = req.query;
     db.query("SELECT time FROM programs WHERE id = ? AND day_of_week = ?", [programId, day], (err, results) => {
         if (err) return res.status(500).json({ error: err });
@@ -564,7 +557,7 @@ app.get("/api/program_times", (req, res) => {
 });
 
 // ✅ 4. Έλεγχος διαθεσιμότητας
-app.get("/api/check_availability", (req, res) => {
+app.get("check_availability", (req, res) => {
     const { programId, day, time } = req.query;
     db.query("SELECT capacity FROM programs WHERE id = ? AND day_of_week = ? AND time = ?", 
         [programId, day, time], 
@@ -580,7 +573,7 @@ app.get("/api/check_availability", (req, res) => {
 });
 
 // ✅ 5. Κράτηση προγράμματος
-app.post("/api/book_program", (req, res) => {
+app.post("/book_program", (req, res) => {
     const { email, programId, day, time } = req.body;
 
     // Έλεγχος αν υπάρχει διαθέσιμη θέση
@@ -614,7 +607,7 @@ app.post("/api/book_program", (req, res) => {
 });
 
 // ✅ 6. Φόρτωση κρατήσεων χρήστη
-app.get("/api/my_bookings", (req, res) => {
+app.get("/my_bookings", (req, res) => {
     const { email } = req.query;
     db.query(
         "SELECT programs.name AS program_name, bookings.day, bookings.time FROM bookings JOIN programs ON bookings.program_id = programs.id WHERE bookings.email = ?", 
