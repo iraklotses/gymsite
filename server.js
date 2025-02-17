@@ -331,6 +331,7 @@ app.post("/announcements", async (req, res) => {
 });
 
 app.post("/users", async (req, res) => {
+    console.log("📩 Received data:", req.body); // ✅ Δες τι φτάνει στον server
     try {
         const { full_name, email, role } = req.body;
 
@@ -338,17 +339,23 @@ app.post("/users", async (req, res) => {
             return res.status(400).json({ error: "Όλα τα πεδία είναι υποχρεωτικά!" });
         }
 
-        const result = await db.query(
+        db.query(
             "INSERT INTO users (full_name, email, role) VALUES (?, ?, ?)",
-            [full_name, email, role]
+            [full_name, email, role],
+            (err, result) => {
+                if (err) {
+                    console.error("Insert error:", err);
+                    return res.status(500).json({ error: "Σφάλμα στον server!" });
+                }
+                res.status(201).json({ message: "Ο χρήστης προστέθηκε!", id: result.insertId });
+            }
         );
-
-        res.status(201).json({ message: "Ο χρήστης προστέθηκε!", id: result.insertId });
     } catch (error) {
         console.error("❌ Σφάλμα στην προσθήκη χρήστη:", error);
         res.status(500).json({ error: "Σφάλμα στον server!" });
     }
 });
+
 
 
 // 🏋️ Επεξεργασία Χρήστη
