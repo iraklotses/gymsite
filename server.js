@@ -332,15 +332,15 @@ app.post("/announcements", async (req, res) => {
 
 app.post("/users", async (req, res) => {
     try {
-        const { name, email, role } = req.body;
+        const { full_name, email, role } = req.body;
 
-        if (!name || !email || !role) {
+        if (!full_name || !email || !role) {
             return res.status(400).json({ error: "Όλα τα πεδία είναι υποχρεωτικά!" });
         }
 
         const result = await db.query(
-            "INSERT INTO users (name, email, role) VALUES (?, ?, ?)",
-            [name, email, role]
+            "INSERT INTO users (full_name, email, role) VALUES (?, ?, ?)",
+            [full_name, email, role]
         );
 
         res.status(201).json({ message: "Ο χρήστης προστέθηκε!", id: result.insertId });
