@@ -340,16 +340,16 @@ app.post("/users", async (req, res) => {
         }
 
         db.query(
-            "INSERT INTO users (full_name, email, role) VALUES (?, ?, ?)",
-            [full_name, email, role],
-            (err, result) => {
-                if (err) {
-                    console.error("Insert error:", err);
-                    return res.status(500).json({ error: "Σφάλμα στον server!" });
-                }
-                res.status(201).json({ message: "Ο χρήστης προστέθηκε!", id: result.insertId });
-            }
-        );
+    "INSERT INTO users (full_name, email, role) VALUES (?, ?, ?)",
+    [full_name, email, role],
+    (err, result) => {
+        if (err) {
+            console.error("❌ Insert error:", err.sqlMessage); // ✅ Δείξε το ακριβές error
+            return res.status(500).json({ error: err.sqlMessage }); // ✅ Επιστροφή error στον client
+        }
+        res.status(201).json({ message: "Ο χρήστης προστέθηκε!", id: result.insertId });
+    }
+);
     } catch (error) {
         console.error("❌ Σφάλμα στην προσθήκη χρήστη:", error);
         res.status(500).json({ error: "Σφάλμα στον server!" });
