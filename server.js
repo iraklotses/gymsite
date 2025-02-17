@@ -595,6 +595,59 @@ app.get("/my_bookings", (req, res) => {
     );
 });
 
+app.delete("/users/:id", async (req, res) => {
+    const userId = req.params.id;
+    try {
+        const result = await db.query("DELETE FROM users WHERE id = ?", [userId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε" });
+        }
+        res.json({ success: true, message: "Ο χρήστης διαγράφηκε επιτυχώς" });
+    } catch (error) {
+        res.status(500).json({ error: "❌ Σφάλμα κατά τη διαγραφή χρήστη" });
+    }
+});
+
+app.delete("/programs/:id", async (req, res) => {
+    const programId = req.params.id;
+    try {
+        const result = await db.query("DELETE FROM programs WHERE id = ?", [programId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Το πρόγραμμα δεν βρέθηκε" });
+        }
+        res.json({ success: true, message: "Το πρόγραμμα διαγράφηκε επιτυχώς" });
+    } catch (error) {
+        res.status(500).json({ error: "❌ Σφάλμα κατά τη διαγραφή προγράμματος" });
+    }
+});
+
+app.delete("/trainers/:id", async (req, res) => {
+    const trainerId = req.params.id;
+    try {
+        const result = await db.query("DELETE FROM trainers WHERE id = ?", [trainerId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Ο γυμναστής δεν βρέθηκε" });
+        }
+        res.json({ success: true, message: "Ο γυμναστής διαγράφηκε επιτυχώς" });
+    } catch (error) {
+        res.status(500).json({ error: "❌ Σφάλμα κατά τη διαγραφή γυμναστή" });
+    }
+});
+
+app.delete("/announcements/:id", async (req, res) => {
+    const announcementId = req.params.id;
+    try {
+        const result = await db.query("DELETE FROM announcements WHERE id = ?", [announcementId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Η ανακοίνωση δεν βρέθηκε" });
+        }
+        res.json({ success: true, message: "Η ανακοίνωση διαγράφηκε επιτυχώς" });
+    } catch (error) {
+        res.status(500).json({ error: "❌ Σφάλμα κατά τη διαγραφή ανακοίνωσης" });
+    }
+});
+
+
 // ✅ Εκκίνηση Server
 app.listen(PORT, () => {
     console.log(`🔥 Server running on http://localhost:${PORT}`);
