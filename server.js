@@ -330,6 +330,26 @@ app.post("/announcements", async (req, res) => {
     }
 });
 
+app.post("/users", async (req, res) => {
+    try {
+        const { name, email, role } = req.body;
+
+        if (!name || !email || !role) {
+            return res.status(400).json({ error: "Όλα τα πεδία είναι υποχρεωτικά!" });
+        }
+
+        const result = await db.query(
+            "INSERT INTO users (name, email, role) VALUES (?, ?, ?)",
+            [name, email, role]
+        );
+
+        res.status(201).json({ message: "Ο χρήστης προστέθηκε!", id: result.insertId });
+    } catch (error) {
+        console.error("❌ Σφάλμα στην προσθήκη χρήστη:", error);
+        res.status(500).json({ error: "Σφάλμα στον server!" });
+    }
+});
+
 
 // 🏋️ Επεξεργασία Χρήστη
 app.put("/users/:id", async (req, res) => {
