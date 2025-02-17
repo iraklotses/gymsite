@@ -276,10 +276,11 @@ app.post("/programs", async (req, res) => {
     try {
         const { name, trainer_id, day_of_week, time, max_capacity } = req.body;
 
-        console.log("Received POST request for new program");
-        console.log("Received Data:", req.body);
+        console.log("📩 Received POST request for new program");
+        console.log("📦 Data received:", req.body);
 
         if (!name || !trainer_id || !day_of_week || !time || !max_capacity) {
+            console.log("❌ Missing fields:", { name, trainer_id, day_of_week, time, max_capacity });
             return res.status(400).json({ error: "Missing required fields" });
         }
 
@@ -288,18 +289,20 @@ app.post("/programs", async (req, res) => {
             [name, trainer_id, day_of_week, time, max_capacity],
             (err, result) => {
                 if (err) {
-                    console.error("Insert error:", err);
-                    return res.status(500).json({ error: "Internal Server Error" });
+                    console.error("❌ Insert error:", err.sqlMessage || err);
+                    return res.status(500).json({ error: "Internal Server Error", details: err.sqlMessage });
                 }
 
+                console.log("✅ Program added successfully with ID:", result.insertId);
                 res.status(201).json({ message: "Program created successfully", program_id: result.insertId });
             }
         );
     } catch (error) {
-        console.error("Unexpected error:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        console.error("❌ Unexpected error:", error);
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 });
+
 
 app.post("/announcements", async (req, res) => {
     try {
