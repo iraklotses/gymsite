@@ -331,30 +331,31 @@ app.post("/announcements", async (req, res) => {
 });
 
 app.post("/users", async (req, res) => {
-    console.log("📩 Received data:", req.body); // ✅ Δες τι φτάνει στον server
+    console.log("📩 Received data:", req.body); // Δες τι φτάνει στον server
     try {
-        const { full_name, email, role } = req.body;
+        const { full_name, email, role, password } = req.body; // ✅ Πρόσθεσε το password
 
-        if (!full_name || !email || !role) {
+        if (!full_name || !email || !role || !password) { // ✅ Τσέκαρε αν λείπει το password
             return res.status(400).json({ error: "Όλα τα πεδία είναι υποχρεωτικά!" });
         }
 
         db.query(
-    "INSERT INTO users (full_name, email, role) VALUES (?, ?, ?)",
-    [full_name, email, role],
-    (err, result) => {
-        if (err) {
-            console.error("❌ Insert error:", err.sqlMessage); // ✅ Δείξε το ακριβές error
-            return res.status(500).json({ error: err.sqlMessage }); // ✅ Επιστροφή error στον client
-        }
-        res.status(201).json({ message: "Ο χρήστης προστέθηκε!", id: result.insertId });
-    }
-);
+            "INSERT INTO users (full_name, email, role, password) VALUES (?, ?, ?, ?)", // ✅ Πρόσθεσε το password
+            [full_name, email, role, password],
+            (err, result) => {
+                if (err) {
+                    console.error("❌ Insert error:", err.sqlMessage);
+                    return res.status(500).json({ error: err.sqlMessage });
+                }
+                res.status(201).json({ message: "Ο χρήστης προστέθηκε!", id: result.insertId });
+            }
+        );
     } catch (error) {
         console.error("❌ Σφάλμα στην προσθήκη χρήστη:", error);
         res.status(500).json({ error: "Σφάλμα στον server!" });
     }
 });
+
 
 
 
