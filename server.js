@@ -456,38 +456,56 @@ app.put("/trainers/:id", async (req, res) => {
 // 📅 Επεξεργασία Προγράμματος
 app.put("/programs/:id", async (req, res) => {
     try {
-        const { id } = req.params;
+        const program_id = req.params.id;
         const { name, trainer_id, day_of_week, time, max_capacity } = req.body;
 
-        console.log("Received PUT request for program:", id);
-        console.log("Received Data:", req.body);
+        console.log(`✏️ Received PUT request for program ID: ${program_id}`);
+        console.log("📦 Data received:", req.body);
 
         if (!name || !trainer_id || !day_of_week || !time || !max_capacity) {
-            console.log("Missing fields!");
+            console.log("❌ Missing fields:", { name, trainer_id, day_of_week, time, max_capacity });
             return res.status(400).json({ error: "Missing required fields" });
         }
 
-        db.query(
-            "UPDATE programs SET name = ?, trainer_id = ?, day_of_week = ?, time = ?, max_capacity = ? WHERE id = ?",
-            [name, trainer_id, day_of_week, time, max_capacity, id],
-            (err, result) => {
-                if (err) {
-                    console.error("Update error:", err);
-                    return res.status(500).json({ error: "Internal Server Error" });
-                }
-
-                if (result.affectedRows === 0) {
-                    return res.status(404).json({ error: "Program not found" });
-                }
-
-                res.json({ message: "Program updated successfully" });
+        // Έλεγχος αν υπάρχει trainer με αυτό το ID
+        db.query("SELECT id FROM trainers WHERE id = ?", [trainer_id], (err, results) => {
+            if (err) {
+                console.error("❌ Database error:", err);
+                return res.status(500).json({ error: "Database error", details: err.sqlMessage });
             }
-        );
+
+            if (results.length === 0) {
+                console.log("❌ Trainer not found:", trainer_id);
+                return res.status(400).json({ error: "Invalid trainer_id. Trainer does not exist." });
+            }
+
+            // Ενημέρωση προγράμματος
+            db.query(
+                "UPDATE programs SET name = ?, trainer_id = ?, day_of_week = ?, time = ?, max_capacity = ? WHERE id = ?",
+                [name, trainer_id, day_of_week, time, max_capacity, program_id],
+                (err, result) => {
+                    if (err) {
+                        console.error("❌ Update error:", err.sqlMessage || err);
+                        return res.status(500).json({ error: "Internal Server Error", details: err.sqlMessage });
+                    }
+
+                    if (result.affectedRows === 0) {
+                        console.log("❌ No program found with ID:", program_id);
+                        return res.status(404).json({ error: "Program not found" });
+                    }
+
+                    console.log("✅ Program updated successfully!");
+                    res.status(200).json({ message: "Program updated successfully" });
+                }
+            );
+        });
+
     } catch (error) {
-        console.error("Unexpected error:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        console.error("❌ Unexpected error:", error);
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 });
+
 
 app.put("/announcements/:id", async (req, res) => {
     try {
