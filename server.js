@@ -284,24 +284,40 @@ app.post("/programs", async (req, res) => {
             return res.status(400).json({ error: "Missing required fields" });
         }
 
-        db.query(
-            "INSERT INTO programs (name, trainer_id, day_of_week, time, max_capacity) VALUES (?, ?, ?, ?, ?)",
-            [name, trainer_id, day_of_week, time, max_capacity],
-            (err, result) => {
-                if (err) {
-                    console.error("❌ Insert error:", err.sqlMessage || err);
-                    return res.status(500).json({ error: "Internal Server Error", details: err.sqlMessage });
-                }
-
-                console.log("✅ Program added successfully with ID:", result.insertId);
-                res.status(201).json({ message: "Program created successfully", program_id: result.insertId });
+        // Έλεγχος αν υπάρχει trainer με το συγκεκριμένο ID
+        db.query("SELECT id FROM trainers WHERE id = ?", [trainer_id], (err, results) => {
+            if (err) {
+                console.error("❌ Database error:", err);
+                return res.status(500).json({ error: "Database error", details: err.sqlMessage });
             }
-        );
+
+            if (results.length === 0) {
+                console.log("❌ Trainer not found:", trainer_id);
+                return res.status(400).json({ error: "Invalid trainer_id. Trainer does not exist." });
+            }
+
+            // Εισαγωγή του προγράμματος στον πίνακα programs
+            db.query(
+                "INSERT INTO programs (name, trainer_id, day_of_week, time, max_capacity) VALUES (?, ?, ?, ?, ?)",
+                [name, trainer_id, day_of_week, time, max_capacity],
+                (err, result) => {
+                    if (err) {
+                        console.error("❌ Insert error:", err.sqlMessage || err);
+                        return res.status(500).json({ error: "Internal Server Error", details: err.sqlMessage });
+                    }
+
+                    console.log("✅ Program added successfully with ID:", result.insertId);
+                    res.status(201).json({ message: "Program created successfully", program_id: result.insertId });
+                }
+            );
+        });
+
     } catch (error) {
         console.error("❌ Unexpected error:", error);
         res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 });
+
 
 
 app.post("/announcements", async (req, res) => {
