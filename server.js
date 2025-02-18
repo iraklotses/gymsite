@@ -679,43 +679,55 @@ app.delete("/users/:id", (req, res) => {
 });
 
 
-app.delete("/programs/:id", async (req, res) => {
-    const programId = req.params.id;
-    try {
-        const result = await db.query("DELETE FROM programs WHERE id = ?", [programId]);
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: "Το πρόγραμμα δεν βρέθηκε" });
-        }
-        res.json({ success: true, message: "Το πρόγραμμα διαγράφηκε επιτυχώς" });
-    } catch (error) {
-        res.status(500).json({ error: "❌ Σφάλμα κατά τη διαγραφή προγράμματος" });
-    }
-});
-
-app.delete("/trainers/:id", async (req, res) => {
+app.delete("/trainers/:id", (req, res) => {
     const trainerId = req.params.id;
-    try {
-        const result = await db.query("DELETE FROM trainers WHERE id = ?", [trainerId]);
+
+    db.query("DELETE FROM trainers WHERE id = ?", [trainerId], (error, result) => {
+        if (error) {
+            console.error("❌ Σφάλμα διαγραφής γυμναστή:", error.message);
+            return res.status(500).json({ error: "❌ Σφάλμα: " + error.message });
+        }
+
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: "Ο γυμναστής δεν βρέθηκε" });
         }
-        res.json({ success: true, message: "Ο γυμναστής διαγράφηκε επιτυχώς" });
-    } catch (error) {
-        res.status(500).json({ error: "❌ Σφάλμα κατά τη διαγραφή γυμναστή" });
-    }
+
+        res.json({ success: true, message: "✔️ Ο γυμναστής διαγράφηκε επιτυχώς" });
+    });
 });
 
-app.delete("/announcements/:id", async (req, res) => {
+app.delete("/announcements/:id", (req, res) => {
     const announcementId = req.params.id;
-    try {
-        const result = await db.query("DELETE FROM announcements WHERE id = ?", [announcementId]);
+
+    db.query("DELETE FROM announcements WHERE id = ?", [announcementId], (error, result) => {
+        if (error) {
+            console.error("❌ Σφάλμα διαγραφής ανακοίνωσης:", error.message);
+            return res.status(500).json({ error: "❌ Σφάλμα: " + error.message });
+        }
+
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: "Η ανακοίνωση δεν βρέθηκε" });
         }
-        res.json({ success: true, message: "Η ανακοίνωση διαγράφηκε επιτυχώς" });
-    } catch (error) {
-        res.status(500).json({ error: "❌ Σφάλμα κατά τη διαγραφή ανακοίνωσης" });
-    }
+
+        res.json({ success: true, message: "✔️ Η ανακοίνωση διαγράφηκε επιτυχώς" });
+    });
+});
+
+app.delete("/programs/:id", (req, res) => {
+    const programId = req.params.id;
+
+    db.query("DELETE FROM programs WHERE id = ?", [programId], (error, result) => {
+        if (error) {
+            console.error("❌ Σφάλμα διαγραφής προγράμματος:", error.message);
+            return res.status(500).json({ error: "❌ Σφάλμα: " + error.message });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Το πρόγραμμα δεν βρέθηκε" });
+        }
+
+        res.json({ success: true, message: "✔️ Το πρόγραμμα διαγράφηκε επιτυχώς" });
+    });
 });
 
 
