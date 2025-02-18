@@ -665,15 +665,20 @@ app.delete("/users/:id", async (req, res) => {
     const userId = req.params.id;
     try {
         const result = await db.query("DELETE FROM users WHERE id = ?", [userId]);
-        console.log("🔹 Αποτέλεσμα διαγραφής:", result); // ➡️ Δες τι επιστρέφει το query
+
+        console.log("🔹 Αποτέλεσμα διαγραφής:", result); // Δες τι επιστρέφει
+
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε" });
         }
-        res.json({ success: true, message: "Ο χρήστης διαγράφηκε επιτυχώς" });
+
+        res.json({ success: true, message: "✔️ Ο χρήστης διαγράφηκε επιτυχώς" });
     } catch (error) {
-        res.status(500).json({ error: "❌ Σφάλμα κατά τη διαγραφή χρήστη" });
+        console.error("❌ Σφάλμα διαγραφής:", error.message); // Τυπώνει το πραγματικό error!
+        res.status(500).json({ error: "❌ Σφάλμα: " + error.message }); // Επιστρέφουμε αληθινό error
     }
 });
+
 
 app.delete("/programs/:id", async (req, res) => {
     const programId = req.params.id;
