@@ -665,6 +665,7 @@ app.delete("/users/:id", async (req, res) => {
     const userId = req.params.id;
     try {
         const result = await db.query("DELETE FROM users WHERE id = ?", [userId]);
+        console.log("🔹 Αποτέλεσμα διαγραφής:", result); // ➡️ Δες τι επιστρέφει το query
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε" });
         }
