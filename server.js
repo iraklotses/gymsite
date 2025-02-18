@@ -661,22 +661,21 @@ app.get("/my_bookings", (req, res) => {
     );
 });
 
-app.delete("/users/:id", async (req, res) => {
+app.delete("/users/:id", (req, res) => {
     const userId = req.params.id;
-    try {
-        const result = await db.query("DELETE FROM users WHERE id = ?", [userId]);
 
-        console.log("🔹 Αποτέλεσμα διαγραφής:", result); // Δες τι επιστρέφει
+    db.query("DELETE FROM users WHERE id = ?", [userId], (error, result) => {
+        if (error) {
+            console.error("❌ Σφάλμα διαγραφής:", error.message);
+            return res.status(500).json({ error: "❌ Σφάλμα: " + error.message });
+        }
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε" });
         }
 
         res.json({ success: true, message: "✔️ Ο χρήστης διαγράφηκε επιτυχώς" });
-    } catch (error) {
-        console.error("❌ Σφάλμα διαγραφής:", error.message); // Τυπώνει το πραγματικό error!
-        res.status(500).json({ error: "❌ Σφάλμα: " + error.message }); // Επιστρέφουμε αληθινό error
-    }
+    });
 });
 
 
