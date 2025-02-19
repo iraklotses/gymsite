@@ -625,6 +625,8 @@ app.get("/dashboard/programs", async (req, res) => {
 // Κάνε κράτηση σε ένα πρόγραμμα
 app.post("/reserve", (req, res) => {
     const { user_id, program_id } = req.body;
+      
+    console.log("🔹 Αίτημα κράτησης:", req.body); // 👉 Δες αν φτάνουν σωστά τα δεδομένα
 
     // Ελέγχουμε αν το πρόγραμμα υπάρχει και αν έχει διαθέσιμες θέσεις
     db.query("SELECT * FROM programs WHERE id = ?", [program_id], (err, results) => {
