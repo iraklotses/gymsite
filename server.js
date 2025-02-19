@@ -623,40 +623,60 @@ app.get("/dashboard/programs", async (req, res) => {
 });
 
 // Κάνε κράτηση σε ένα πρόγραμμα
-app.post("/reserve", async (req, res) => {
+app.post("/reserve", (req, res) => {
     const { user_id, program_id } = req.body;
-    try {
-        // Πρώτα φέρνουμε το πρόγραμμα
-        const [program] = await db.promise().query("SELECT * FROM programs WHERE id = ?", [program_id]);
-        if (program.length === 0 || program[0].max_capacity <= 0) {
+
+    // Ελέγχουμε αν το πρόγραμμα υπάρχει και αν έχει διαθέσιμες θέσεις
+    db.query("SELECT * FROM programs WHERE id = ?", [program_id], (err, results) => {
+        if (err) {
+            console.error("Σφάλμα στη βάση κατά την αναζήτηση του προγράμματος:", err);
+            return res.status(500).json({ error: "Σφάλμα κατά την κράτηση" });
+        }
+
+        if (results.length === 0 || results[0].max_capacity <= 0) {
             return res.status(400).json({ error: "Το πρόγραμμα δεν είναι διαθέσιμο" });
         }
 
-        // Μειώνουμε το max_capacity κατά 1
-        await db.promise().query("UPDATE programs SET max_capacity = max_capacity - 1 WHERE id = ?", [program_id]);
+        const program = results[0];
 
-        // Καταχωρούμε το πρόγραμμα στο ιστορικό κρατήσεων
-        await db.promise().query(
-            "INSERT INTO reserv_history (user_id, program_name, trainer_id, day, time) VALUES (?, ?, ?, ?, ?)",
-            [user_id, program[0].name, program[0].trainer_id, program[0].day, program[0].time]
-        );
+        // Μειώνουμε τη διαθεσιμότητα του προγράμματος
+        db.query("UPDATE programs SET max_capacity = max_capacity - 1 WHERE id = ?", [program_id], (err) => {
+            if (err) {
+                console.error("Σφάλμα κατά την ενημέρωση της διαθεσιμότητας:", err);
+                return res.status(500).json({ error: "Σφάλμα κατά την κράτηση" });
+            }
 
-        res.json({ success: true, message: "Η κράτηση ολοκληρώθηκε επιτυχώς!" });
-    } catch (error) {
-        res.status(500).json({ error: "Σφάλμα κατά την κράτηση" });
-    }
+            // Καταχωρούμε την κράτηση στο ιστορικό
+            db.query(
+                "INSERT INTO reserv_history (user_id, program_name, trainer_id, day, time) VALUES (?, ?, ?, ?, ?)",
+                [user_id, program.name, program.trainer_id, program.day, program.time],
+                (err) => {
+                    if (err) {
+                        console.error("Σφάλμα κατά την καταχώρηση στο ιστορικό:", err);
+                        return res.status(500).json({ error: "Σφάλμα κατά την κράτηση" });
+                    }
+
+                    res.json({ success: true, message: "Η κράτηση ολοκληρώθηκε επιτυχώς!" });
+                }
+            );
+        });
+    });
 });
+
 
 // Φέρνει το ιστορικό κρατήσεων ενός χρήστη
-app.get("/reservations/:userId", async (req, res) => {
+app.get("/reservations/:userId", (req, res) => {
     const userId = req.params.userId;
-    try {
-        const [reservations] = await db.promise().query("SELECT * FROM reserv_history WHERE user_id = ?", [userId]);
-        res.json(reservations);
-    } catch (error) {
-        res.status(500).json({ error: "Σφάλμα κατά τη φόρτωση των κρατήσεων" });
-    }
+
+    db.query("SELECT * FROM reserv_history WHERE user_id = ?", [userId], (err, results) => {
+        if (err) {
+            console.error("Σφάλμα κατά τη φόρτωση του ιστορικού:", err);
+            return res.status(500).json({ error: "Σφάλμα κατά τη φόρτωση των κρατήσεων" });
+        }
+        res.json(results);
+    });
 });
+
 
 // ✅ Εκκίνηση Server
 app.listen(PORT, () => {
