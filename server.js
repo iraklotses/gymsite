@@ -612,6 +612,53 @@ app.delete("/programs/:id", (req, res) => {
     });
 });
 
+// Φέρνει όλα τα διαθέσιμα προγράμματα
+app.get("/dashboard/programs", async (req, res) => {
+    try {
+        const [programs] = await db.promise().query("SELECT * FROM programs WHERE max_capacity > 0");
+        res.json(programs);
+    } catch (error) {
+        res.status(500).json({ error: "Σφάλμα κατά τη φόρτωση των προγραμμάτων" });
+    }
+});
+
+// Κάνε κράτηση σε ένα πρόγραμμα
+app.post("/dashboard/reserve", async (req, res) => {
+    const { user_id, program_id } = req.body;
+    try {
+        // Πρώτα φέρνουμε το πρόγραμμα
+        const [program] = await db.promise().query("SELECT * FROM programs WHERE id = ?", [program_id]);
+        if (program.length === 0 || program[0].max_capacity <= 0) {
+            return res.status(400).json({ error: "Το πρόγραμμα δεν είναι διαθέσιμο" });
+        }
+
+        // Μειώνουμε το max_capacity κατά 1
+        await db.promise().query("UPDATE programs SET max_capacity = max_capacity - 1 WHERE id = ?", [program_id]);
+
+        // Καταχωρούμε το πρόγραμμα στο ιστορικό κρατήσεων
+        await db.promise().query(
+            "INSERT INTO reserv_history (user_id, program_name, trainer_id, day, time) VALUES (?, ?, ?, ?, ?)",
+            [user_id, program[0].name, program[0].trainer_id, program[0].day, program[0].time]
+        );
+
+        res.json({ success: true, message: "Η κράτηση ολοκληρώθηκε επιτυχώς!" });
+    } catch (error) {
+        res.status(500).json({ error: "Σφάλμα κατά την κράτηση" });
+    }
+});
+
+// Φέρνει το ιστορικό κρατήσεων ενός χρήστη
+app.get("/dashboard/reservations/:userId", async (req, res) => {
+    const userId = req.params.userId;
+    try {
+        const [reservations] = await db.promise().query("SELECT * FROM reserv_history WHERE user_id = ?", [userId]);
+        res.json(reservations);
+    } catch (error) {
+        res.status(500).json({ error: "Σφάλμα κατά τη φόρτωση των κρατήσεων" });
+    }
+});
+
+
 
 // ✅ Εκκίνηση Server
 app.listen(PORT, () => {
