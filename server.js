@@ -636,7 +636,6 @@ app.post("/reserve", (req, res) => {
 
         if (err) {
             console.error("Σφάλμα στη βάση κατά την αναζήτηση του προγράμματος:", err);
-            console.error("⛔ SQL Error:", err);
             return res.status(500).json({ error: "Σφάλμα κατά την κράτηση" });
         }
 
@@ -650,7 +649,6 @@ app.post("/reserve", (req, res) => {
         db.query("UPDATE programs SET max_capacity = max_capacity - 1 WHERE id = ?", [program_id], (err) => {
             if (err) {
                 console.error("Σφάλμα κατά την ενημέρωση της διαθεσιμότητας:", err);
-                console.error("⛔ SQL Error:", err);
                 return res.status(500).json({ error: "Σφάλμα κατά την κράτηση" });
             }
 
@@ -661,7 +659,6 @@ app.post("/reserve", (req, res) => {
                 (err) => {
                     if (err) {
                         console.error("Σφάλμα κατά την καταχώρηση στο ιστορικό:", err);
-                        console.error("⛔ SQL Error:", err);
                         return res.status(500).json({ error: "Σφάλμα κατά την κράτηση" });
                     }
 
