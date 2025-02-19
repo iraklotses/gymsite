@@ -658,7 +658,13 @@ app.get("/dashboard/reservations/:userId", async (req, res) => {
     }
 });
 
-
+app.get("/reservations/:id", (req, res) => {
+    const userId = req.params.id;
+    db.query("SELECT * FROM reserv_history WHERE user_id = ?", [userId], (err, results) => {
+        if (err) return res.status(500).json({ error: "Σφάλμα στη βάση!" });
+        res.json(results);
+    });
+});
 
 // ✅ Εκκίνηση Server
 app.listen(PORT, () => {
