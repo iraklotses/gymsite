@@ -623,7 +623,7 @@ app.get("/dashboard/programs", async (req, res) => {
 });
 
 // Κάνε κράτηση σε ένα πρόγραμμα
-app.post("/dashboard/reserve", async (req, res) => {
+app.post("/reserve", async (req, res) => {
     const { user_id, program_id } = req.body;
     try {
         // Πρώτα φέρνουμε το πρόγραμμα
@@ -648,7 +648,7 @@ app.post("/dashboard/reserve", async (req, res) => {
 });
 
 // Φέρνει το ιστορικό κρατήσεων ενός χρήστη
-app.get("/dashboard/reservations/:userId", async (req, res) => {
+app.get("/reservations/:userId", async (req, res) => {
     const userId = req.params.userId;
     try {
         const [reservations] = await db.promise().query("SELECT * FROM reserv_history WHERE user_id = ?", [userId]);
