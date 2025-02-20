@@ -654,13 +654,9 @@ app.post("/reserve", (req, res) => {
 
             // Καταχωρούμε την κράτηση στο ιστορικό
            db.query(
-            console.log("👉 user_id:", user_id);
-            console.log("👉 program_id:", program_id);
-            console.log("📌 Βρέθηκε πρόγραμμα:", program);
-            console.log("📝 Θα εισάγουμε στο ιστορικό:", user_id, program.name, program.trainer_id, program.day_of_week, program.time);
 
              "INSERT INTO reserv_history (user_id, program_name, trainer_id, day, time) VALUES (?, ?, ?, ?, ?)",
-             [user_id, program.name, program.trainer_id, program.day_of_week, program.time],
+             [user_id, program.name, program.trainer_id, program.day, program.time],
                 (err) => {
                     if (err) {
                         console.error("Σφάλμα κατά την καταχώρηση στο ιστορικό:", err);
