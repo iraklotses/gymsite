@@ -6,16 +6,16 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ CORS Middleware
+// CORS Middleware
 app.use(cors({
-    origin: "https://gymsite-frontend.vercel.app", // Επιτρέπει το frontend URL
+    origin: "https://gymsite-frontend.vercel.app",
     methods: "GET, POST, DELETE, PUT",
     allowedHeaders: "Content-Type, Authorization"
 }));
 
 app.use(express.json());
 
-// 🔗 Σύνδεση με τη MySQL βάση δεδομένων
+// Σύνδεση με τη MySQL βάση δεδομένων
 const db = mysql.createPool({
     host: "sql.freedb.tech",
     user: "freedb_Iraklotses",
@@ -23,12 +23,7 @@ const db = mysql.createPool({
     database: "freedb_gym_database"
 });
 
-// ✅ Test route
-app.get("/", (req, res) => {
-    res.send("🚀 Gym Management API is running!");
-});
-
-// 🔥 LOGIN ROUTE (Έλεγχος users & admins)
+// Login
 app.post("/login", (req, res) => {
     const { email, password } = req.body;
 
@@ -62,7 +57,7 @@ app.post("/login", (req, res) => {
 });
 
 
-// 🔥 PROFILE ROUTE
+// Profile
 app.get("/profile", (req, res) => {
     const { id } = req.query;
 
@@ -82,7 +77,7 @@ app.get("/profile", (req, res) => {
     );
 });
 
-// 🔥 ΥΠΗΡΕΣΙΕΣ (Services)
+// Services
 app.get("/services", (req, res) => {
     db.query("SELECT id, name, description, price FROM services", (err, results) => {
         if (err) {
@@ -92,6 +87,7 @@ app.get("/services", (req, res) => {
     });
 });
 
+// Announcements
 app.get("/announcements", async (req, res) => {
     console.log("📢 Endpoint /announcements κλήθηκε!");
 
@@ -99,12 +95,11 @@ app.get("/announcements", async (req, res) => {
         const [rows] = await db.promise().query("SELECT * FROM announcements");
         res.json(rows);
     } catch (error) {
-        console.error("❌ Σφάλμα στη βάση:", error);
+        console.error("Σφάλμα στη βάση:", error);
         res.status(500).json({ error: "Database error" });
     }
 });
 
-//ΔΙΑΧΕΙΡΙΣΗ
 app.get("/pending_users", async (req, res) => {
     db.query("SELECT * FROM pending_users", (err, results) => {
         if (err) {
@@ -122,7 +117,7 @@ app.post("/approve_user", async (req, res) => {
         return res.status(400).json({ error: "Missing user ID or role" });
     }
 
-    // Βρίσκουμε τον χρήστη από το pending_users
+    // Εύρεση χρήστη από το pending_users
     db.query("SELECT * FROM pending_users WHERE id = ?", [userId], (err, results) => {
         if (err) {
             console.error("Error fetching user:", err);
@@ -135,17 +130,17 @@ app.post("/approve_user", async (req, res) => {
 
         const user = results[0];
 
-        // Μεταφορά του χρήστη στον πίνακα `users`
+        // Μεταφορά του χρήστη στον πίνακα users
         db.query(
             "INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)",
-            [user.full_name, user.email, user.password, role], // Προσθήκη role
+            [user.full_name, user.email, user.password, role],
             (err) => {
                 if (err) {
                     console.error("Error inserting user:", err);
                     return res.status(500).json({ error: "Failed to approve user" });
                 }
 
-                // Διαγραφή από το pending_users
+                // Διαγραφή από το pending_users αντίστοιχα
                 db.query("DELETE FROM pending_users WHERE id = ?", [userId], (err) => {
                     if (err) {
                         console.error("Error deleting user from pending_users:", err);
@@ -161,7 +156,7 @@ app.post("/approve_user", async (req, res) => {
 
 
 app.delete("/reject_user", async (req, res) => {
-    const { userId } = req.body; // Λαμβάνουμε το ID του χρήστη
+    const { userId } = req.body;
 
     if (!userId) {
         return res.status(400).json({ error: "Missing user ID" });
@@ -181,8 +176,7 @@ app.delete("/reject_user", async (req, res) => {
     });
 });
 
-
-
+//Register
 app.post("/register", async (req, res) => {
     try {
         const { full_name, email, password } = req.body;
@@ -217,31 +211,34 @@ app.get("/users", (req, res) => {
     });
 });
 
+//Trainers
 app.get("/trainers", (req, res) => {
     console.log("🔍 Request για trainers...");
     db.query("SELECT * FROM trainers", (err, results) => {
         if (err) {
-            console.error("❌ Σφάλμα στη βάση:", err);
+            console.error("Σφάλμα στη βάση:", err);
             return res.status(500).json({ error: "Σφάλμα στη βάση" });
         }
         if (!results || results.length === 0) {
-            console.log("⚠️ Δεν βρέθηκαν γυμναστές!");
+            console.log("Δεν βρέθηκαν γυμναστές!");
             return res.status(404).json({ error: "Δεν βρέθηκαν γυμναστές" });
         }
         res.json(results);
     });
 });
 
+//Programs
 app.get("/programs", (req, res) => {
     db.query("SELECT id, name, trainer_id, day_of_week, time, max_capacity FROM programs", (err, results) => {
         if (err) {
-            console.error("❌ Σφάλμα στη βάση:", err);
+            console.error("Σφάλμα στη βάση:", err);
             return res.status(500).json({ error: "Σφάλμα στη βάση" });
         }
         res.json(results);
     });
 });
 
+//add Trainers
 app.post("/trainers", async (req, res) => {
     try {
         const { full_name, specialty } = req.body;
@@ -271,28 +268,25 @@ app.post("/trainers", async (req, res) => {
     }
 });
 
-
+//add Programs
 app.post("/programs", async (req, res) => {
     try {
         const { name, trainer_id, day_of_week, time, max_capacity } = req.body;
 
-        console.log("📩 Received POST request for new program");
-        console.log("📦 Data received:", req.body);
-
         if (!name || !trainer_id || !day_of_week || !time || !max_capacity) {
-            console.log("❌ Missing fields:", { name, trainer_id, day_of_week, time, max_capacity });
+            console.log("Missing fields:", { name, trainer_id, day_of_week, time, max_capacity });
             return res.status(400).json({ error: "Missing required fields" });
         }
 
         // Έλεγχος αν υπάρχει trainer με το συγκεκριμένο ID
         db.query("SELECT id FROM trainers WHERE id = ?", [trainer_id], (err, results) => {
             if (err) {
-                console.error("❌ Database error:", err);
+                console.error("Database error:", err);
                 return res.status(500).json({ error: "Database error", details: err.sqlMessage });
             }
 
             if (results.length === 0) {
-                console.log("❌ Trainer not found:", trainer_id);
+                console.log("Trainer not found:", trainer_id);
                 return res.status(400).json({ error: "Invalid trainer_id. Trainer does not exist." });
             }
 
@@ -306,20 +300,19 @@ app.post("/programs", async (req, res) => {
                         return res.status(500).json({ error: "Internal Server Error", details: err.sqlMessage });
                     }
 
-                    console.log("✅ Program added successfully with ID:", result.insertId);
+                    console.log("Program added successfully with ID:", result.insertId);
                     res.status(201).json({ message: "Program created successfully", program_id: result.insertId });
                 }
             );
         });
 
     } catch (error) {
-        console.error("❌ Unexpected error:", error);
+        console.error("Unexpected error:", error);
         res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 });
 
-
-
+//add Announcements
 app.post("/announcements", async (req, res) => {
     try {
         const { title, content } = req.body;
@@ -349,36 +342,34 @@ app.post("/announcements", async (req, res) => {
     }
 });
 
+//add Users
 app.post("/users", async (req, res) => {
-    console.log("📩 Received data:", req.body); // Δες τι φτάνει στον server
+    
     try {
-        const { full_name, email, role, password } = req.body; // ✅ Πρόσθεσε το password
+        const { full_name, email, role, password } = req.body; 
 
-        if (!full_name || !email || !role || !password) { // ✅ Τσέκαρε αν λείπει το password
+        if (!full_name || !email || !role || !password) { 
             return res.status(400).json({ error: "Όλα τα πεδία είναι υποχρεωτικά!" });
         }
 
         db.query(
-            "INSERT INTO users (full_name, email, role, password) VALUES (?, ?, ?, ?)", // ✅ Πρόσθεσε το password
+            "INSERT INTO users (full_name, email, role, password) VALUES (?, ?, ?, ?)", 
             [full_name, email, role, password],
             (err, result) => {
                 if (err) {
-                    console.error("❌ Insert error:", err.sqlMessage);
+                    console.error("Insert error:", err.sqlMessage);
                     return res.status(500).json({ error: err.sqlMessage });
                 }
                 res.status(201).json({ message: "Ο χρήστης προστέθηκε!", id: result.insertId });
             }
         );
     } catch (error) {
-        console.error("❌ Σφάλμα στην προσθήκη χρήστη:", error);
+        console.error("Σφάλμα στην προσθήκη χρήστη:", error);
         res.status(500).json({ error: "Σφάλμα στον server!" });
     }
 });
 
-
-
-
-// 🏋️ Επεξεργασία Χρήστη
+// edit User
 app.put("/users/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -414,8 +405,7 @@ app.put("/users/:id", async (req, res) => {
     }
 });
 
-
-// 🏋️‍♂️ Επεξεργασία Γυμναστή
+// edit Trainer
 app.put("/trainers/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -452,62 +442,57 @@ app.put("/trainers/:id", async (req, res) => {
 });
 
 
-
-// 📅 Επεξεργασία Προγράμματος
+// edit Program
 app.put("/programs/:id", async (req, res) => {
     try {
         const program_id = req.params.id;
         const { name, trainer_id, day_of_week, time, max_capacity } = req.body;
-
-        console.log(`✏️ Received PUT request for program ID: ${program_id}`);
-        console.log("📦 Data received:", req.body);
 
         if (!name || !trainer_id || !day_of_week || !time || !max_capacity) {
             console.log("❌ Missing fields:", { name, trainer_id, day_of_week, time, max_capacity });
             return res.status(400).json({ error: "Missing required fields" });
         }
 
-        // Έλεγχος αν υπάρχει trainer με αυτό το ID
+        // Έλεγχος ύπαρξης trainer με αυτό το ID
         db.query("SELECT id FROM trainers WHERE id = ?", [trainer_id], (err, results) => {
             if (err) {
-                console.error("❌ Database error:", err);
+                console.error("Database error:", err);
                 return res.status(500).json({ error: "Database error", details: err.sqlMessage });
             }
 
             if (results.length === 0) {
-                console.log("❌ Trainer not found:", trainer_id);
+                console.log("Trainer not found:", trainer_id);
                 return res.status(400).json({ error: "Invalid trainer_id. Trainer does not exist." });
             }
 
-            // Ενημέρωση προγράμματος
+            // updating Program
             db.query(
                 "UPDATE programs SET name = ?, trainer_id = ?, day_of_week = ?, time = ?, max_capacity = ? WHERE id = ?",
                 [name, trainer_id, day_of_week, time, max_capacity, program_id],
                 (err, result) => {
                     if (err) {
-                        console.error("❌ Update error:", err.sqlMessage || err);
+                        console.error("Update error:", err.sqlMessage || err);
                         return res.status(500).json({ error: "Internal Server Error", details: err.sqlMessage });
                     }
 
                     if (result.affectedRows === 0) {
-                        console.log("❌ No program found with ID:", program_id);
+                        console.log("No program found with ID:", program_id);
                         return res.status(404).json({ error: "Program not found" });
                     }
 
-                    console.log("✅ Program updated successfully!");
+                    console.log("Program updated successfully!");
                     res.status(200).json({ message: "Program updated successfully" });
                 }
             );
         });
 
     } catch (error) {
-        console.error("❌ Unexpected error:", error);
+        console.error("Unexpected error:", error);
         res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 });
 
-
-
+//edit Announcements
 app.put("/announcements/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -543,13 +528,14 @@ app.put("/announcements/:id", async (req, res) => {
     }
 });
 
+//delete User
 app.delete("/users/:id", (req, res) => {
     const userId = req.params.id;
 
     db.query("DELETE FROM users WHERE id = ?", [userId], (error, result) => {
         if (error) {
-            console.error("❌ Σφάλμα διαγραφής:", error.message);
-            return res.status(500).json({ error: "❌ Σφάλμα: " + error.message });
+            console.error("Σφάλμα διαγραφής:", error.message);
+            return res.status(500).json({ error: "Σφάλμα: " + error.message });
         }
 
         if (result.affectedRows === 0) {
@@ -560,7 +546,7 @@ app.delete("/users/:id", (req, res) => {
     });
 });
 
-
+//delete Trainer
 app.delete("/trainers/:id", (req, res) => {
     const trainerId = req.params.id;
 
@@ -578,6 +564,7 @@ app.delete("/trainers/:id", (req, res) => {
     });
 });
 
+//delete Announcement
 app.delete("/announcements/:id", (req, res) => {
     const announcementId = req.params.id;
 
@@ -595,6 +582,7 @@ app.delete("/announcements/:id", (req, res) => {
     });
 });
 
+//delete Program
 app.delete("/programs/:id", (req, res) => {
     const programId = req.params.id;
 
@@ -612,7 +600,7 @@ app.delete("/programs/:id", (req, res) => {
     });
 });
 
-// Φέρνει όλα τα διαθέσιμα προγράμματα
+// Εμφάνιση programs για το dashboard
 app.get("/dashboard/programs", async (req, res) => {
     try {
         const [programs] = await db.promise().query("SELECT * FROM programs WHERE max_capacity > 0");
@@ -622,17 +610,12 @@ app.get("/dashboard/programs", async (req, res) => {
     }
 });
 
-// Κάνε κράτηση σε ένα πρόγραμμα
+// Reserve Program
 app.post("/reserve", (req, res) => {
     const { user_id, program_id } = req.body;
-      
-    console.log("🔹 Αίτημα κράτησης:", req.body); // 👉 Δες αν φτάνουν σωστά τα δεδομένα
-
-    // Ελέγχουμε αν το πρόγραμμα υπάρχει και αν έχει διαθέσιμες θέσεις
+    
+    // Ελέγχουμε αν το πρόγραμμα υπάρχει και διαθέσιμες θέσεις
     db.query("SELECT * FROM programs WHERE id = ?", [program_id], (err, results) => {
-        console.log("📌 program_id:", program_id);
-
-        console.log("🔍 Βρέθηκε πρόγραμμα:", results);
 
         if (err) {
             console.error("Σφάλμα στη βάση κατά την αναζήτηση του προγράμματος:", err);
@@ -670,7 +653,7 @@ app.post("/reserve", (req, res) => {
 });
 
 
-// Φέρνει το ιστορικό κρατήσεων ενός χρήστη
+// Reservation History
 app.get("/reservations/:userId", (req, res) => {
     const userId = req.params.userId;
 
@@ -684,7 +667,7 @@ app.get("/reservations/:userId", (req, res) => {
 });
 
 
-// ✅ Εκκίνηση Server
+// Server ready
 app.listen(PORT, () => {
     console.log(`🔥 Server running on http://localhost:${PORT}`);
 });
