@@ -669,5 +669,5 @@ app.get("/reservations/:userId", (req, res) => {
 
 // Server ready
 app.listen(PORT, () => {
-    console.log(`🔥 Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });
