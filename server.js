@@ -56,27 +56,6 @@ app.post("/login", (req, res) => {
     );
 });
 
-
-// Profile
-app.get("/profile", (req, res) => {
-    const { id } = req.query;
-
-    if (!id) {
-        return res.status(400).json({ error: "Το user_id είναι υποχρεωτικό!" });
-    }
-
-    db.query(
-        "SELECT full_name, email FROM users WHERE id = ?",
-        [id],
-        (err, result) => {
-            if (err) return res.status(500).json({ error: "Σφάλμα στη βάση!" });
-            if (result.length === 0) return res.status(404).json({ error: "Ο χρήστης δεν βρέθηκε!" });
-
-            res.json(result[0]);
-        }
-    );
-});
-
 // Services
 app.get("/services", (req, res) => {
     db.query("SELECT id, name, description, price FROM services", (err, results) => {
