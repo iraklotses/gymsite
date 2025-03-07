@@ -68,7 +68,7 @@ app.get("/services", (req, res) => {
 
 // Announcements
 app.get("/announcements", async (req, res) => {
-    console.log("📢 Endpoint /announcements κλήθηκε!");
+    console.log("Endpoint /announcements κλήθηκε!");
 
     try {
         const [rows] = await db.promise().query("SELECT * FROM announcements");
